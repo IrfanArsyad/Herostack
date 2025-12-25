@@ -1,6 +1,13 @@
-# HeroStack
+<p align="center">
+  <img src="https://raw.githubusercontent.com/IrfanArsyad/Herostack/main/public/logo.svg" width="80" height="80" alt="HeroStack Logo">
+</p>
 
-Self-hosted documentation platform built with Next.js 15. Organize knowledge into Shelves, Books, Chapters, and Pages with a clean, modern interface.
+<h1 align="center">HeroStack</h1>
+
+<p align="center">
+  Self-hosted documentation platform built with Next.js 15.<br>
+  Organize knowledge into Shelves, Books, Chapters, and Pages.
+</p>
 
 ## Features
 
@@ -63,7 +70,7 @@ docker compose up -d
 # Run database migration (first time only)
 docker compose exec app bun run db:push
 
-# Open http://localhost:3000
+# Open http://localhost:3056
 ```
 
 ### Local Development
@@ -82,7 +89,7 @@ bun run db:push
 # Start dev server
 bun run dev
 
-# Open http://localhost:3000
+# Open http://localhost:3056
 ```
 
 ## Environment Variables
