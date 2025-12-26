@@ -11,6 +11,7 @@ import { relations } from "drizzle-orm";
 
 // Enums
 export const userRoleEnum = pgEnum("user_role", ["admin", "editor", "viewer"]);
+export const teamRoleEnum = pgEnum("team_role", ["owner", "admin", "member"]);
 export const activityActionEnum = pgEnum("activity_action", [
   "created",
   "updated",
@@ -78,6 +79,55 @@ export const verificationTokens = pgTable(
   ]
 );
 
+// ============ TEAMS ============
+
+export const teams = pgTable("teams", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  slug: text("slug").unique().notNull(),
+  description: text("description"),
+  createdBy: text("created_by").references(() => users.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const teamMembers = pgTable(
+  "team_members",
+  {
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: teamRoleEnum("role").default("member").notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.teamId, t.userId] })]
+);
+
+export const teamInvitations = pgTable("team_invitations", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  teamId: text("team_id")
+    .notNull()
+    .references(() => teams.id, { onDelete: "cascade" }),
+  token: text("token").unique().notNull(),
+  role: teamRoleEnum("role").default("member").notNull(),
+  maxUses: integer("max_uses"), // null = unlimited
+  uses: integer("uses").default(0).notNull(),
+  expiresAt: timestamp("expires_at", { mode: "date" }),
+  createdBy: text("created_by").references(() => users.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
 // ============ CONTENT TABLES ============
 
 export const shelves = pgTable("shelves", {
@@ -89,6 +139,9 @@ export const shelves = pgTable("shelves", {
   description: text("description"),
   coverImage: text("cover_image"),
   sortOrder: integer("sort_order").default(0).notNull(),
+  teamId: text("team_id").references(() => teams.id, {
+    onDelete: "set null",
+  }),
   createdBy: text("created_by").references(() => users.id, {
     onDelete: "set null",
   }),
@@ -108,6 +161,9 @@ export const books = pgTable("books", {
   description: text("description"),
   coverImage: text("cover_image"),
   sortOrder: integer("sort_order").default(0).notNull(),
+  teamId: text("team_id").references(() => teams.id, {
+    onDelete: "set null",
+  }),
   createdBy: text("created_by").references(() => users.id, {
     onDelete: "set null",
   }),
@@ -258,12 +314,50 @@ export const usersRelations = relations(users, ({ many }) => ({
   pages: many(pages),
   comments: many(comments),
   activities: many(activities),
+  teamMemberships: many(teamMembers),
+  createdTeams: many(teams),
+}));
+
+export const teamsRelations = relations(teams, ({ one, many }) => ({
+  createdByUser: one(users, {
+    fields: [teams.createdBy],
+    references: [users.id],
+  }),
+  members: many(teamMembers),
+  shelves: many(shelves),
+  books: many(books),
+}));
+
+export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
+  team: one(teams, {
+    fields: [teamMembers.teamId],
+    references: [teams.id],
+  }),
+  user: one(users, {
+    fields: [teamMembers.userId],
+    references: [users.id],
+  }),
+}));
+
+export const teamInvitationsRelations = relations(teamInvitations, ({ one }) => ({
+  team: one(teams, {
+    fields: [teamInvitations.teamId],
+    references: [teams.id],
+  }),
+  createdByUser: one(users, {
+    fields: [teamInvitations.createdBy],
+    references: [users.id],
+  }),
 }));
 
 export const shelvesRelations = relations(shelves, ({ one, many }) => ({
   createdByUser: one(users, {
     fields: [shelves.createdBy],
     references: [users.id],
+  }),
+  team: one(teams, {
+    fields: [shelves.teamId],
+    references: [teams.id],
   }),
   books: many(books),
 }));
@@ -276,6 +370,10 @@ export const booksRelations = relations(books, ({ one, many }) => ({
   createdByUser: one(users, {
     fields: [books.createdBy],
     references: [users.id],
+  }),
+  team: one(teams, {
+    fields: [books.teamId],
+    references: [teams.id],
   }),
   chapters: many(chapters),
   pages: many(pages),
@@ -348,6 +446,15 @@ export const taggablesRelations = relations(taggables, ({ one }) => ({
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+
+export type Team = typeof teams.$inferSelect;
+export type NewTeam = typeof teams.$inferInsert;
+
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type NewTeamMember = typeof teamMembers.$inferInsert;
+
+export type TeamInvitation = typeof teamInvitations.$inferSelect;
+export type NewTeamInvitation = typeof teamInvitations.$inferInsert;
 
 export type Shelf = typeof shelves.$inferSelect;
 export type NewShelf = typeof shelves.$inferInsert;

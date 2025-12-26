@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { db, pages } from "@/lib/db";
 import { eq } from "drizzle-orm";
@@ -36,6 +36,7 @@ import { CommentsSection } from "@/components/comments/comments-section";
 import { getComments } from "@/lib/actions/comments";
 import { auth } from "@/lib/auth";
 import { ShareDialog } from "@/components/share/share-dialog";
+import { getUserTeamIds } from "@/lib/permissions";
 
 interface PageViewProps {
   params: Promise<{ slug: string }>;
@@ -48,6 +49,9 @@ async function getPage(slug: string) {
       book: {
         with: {
           shelf: true,
+          team: {
+            columns: { id: true, name: true, slug: true },
+          },
         },
       },
       chapter: true,
@@ -64,7 +68,40 @@ export default async function PageView({ params }: PageViewProps) {
   const { slug } = await params;
   const [page, session] = await Promise.all([getPage(slug), auth()]);
 
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
   if (!page) {
+    notFound();
+  }
+
+  // Check access: through the book's team or personal ownership
+  const hasAccess = await (async () => {
+    // Page without a book - check if created by user
+    if (!page.bookId && page.createdBy === session.user.id) {
+      return true;
+    }
+    // Page in a book
+    if (page.book) {
+      // Personal book created by user
+      if (!page.book.teamId && page.book.createdBy === session.user.id) {
+        return true;
+      }
+      // Team book - check membership
+      if (page.book.teamId) {
+        const teamIds = await getUserTeamIds(session.user.id);
+        return teamIds.includes(page.book.teamId);
+      }
+    }
+    // Admin can access all
+    if (session.user.role === "admin") {
+      return true;
+    }
+    return false;
+  })();
+
+  if (!hasAccess) {
     notFound();
   }
 

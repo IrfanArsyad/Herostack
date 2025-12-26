@@ -29,7 +29,11 @@
 - **Ranked Results** - Results sorted by relevance with snippets
 - **Command Menu** - Quick navigation with Cmd+K
 
-### Collaboration
+### Teams & Collaboration
+- **Team Management** - Create teams and invite members
+- **Team-based Content** - Assign shelves and books to teams
+- **Invitation Links** - Generate shareable invite links with role assignment
+- **Member Roles** - Owner, Admin, Member with different permissions
 - **Comments System** - Threaded comments on pages
 - **Public Sharing** - Generate read-only links for external sharing
 - **Role-Based Access Control (RBAC)**
@@ -37,7 +41,8 @@
   - **Editor** - Create, edit, view content
   - **Viewer** - Read-only access
 
-### Export
+### Import & Export
+- **BookStack Import** - Import from BookStack Portable ZIP format
 - **PDF Export** - Export pages, chapters, or entire books
 - **Markdown Export** - Download content as Markdown files
 

@@ -17,6 +17,7 @@ export async function createShelf(formData: FormData) {
 
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
+  const teamId = formData.get("teamId") as string | null;
 
   if (!name) {
     return { error: "Name is required" };
@@ -32,6 +33,7 @@ export async function createShelf(formData: FormData) {
         name,
         slug,
         description,
+        teamId: teamId || null,
         createdBy: session!.user.id,
       })
       .returning();
@@ -55,6 +57,7 @@ export async function updateShelf(id: string, formData: FormData) {
 
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
+  const teamId = formData.get("teamId") as string | null;
 
   if (!name) {
     return { error: "Name is required" };
@@ -66,6 +69,7 @@ export async function updateShelf(id: string, formData: FormData) {
       .set({
         name,
         description,
+        teamId: teamId || null,
         updatedAt: new Date(),
       })
       .where(eq(shelves.id, id))

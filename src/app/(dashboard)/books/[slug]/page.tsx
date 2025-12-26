@@ -1,7 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { db, books } from "@/lib/db";
 import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
+import { getUserTeamIds } from "@/lib/permissions";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +47,9 @@ async function getBook(slug: string) {
     where: eq(books.slug, slug),
     with: {
       shelf: true,
+      team: {
+        columns: { id: true, name: true, slug: true },
+      },
       chapters: {
         with: {
           pages: true,
@@ -59,10 +64,37 @@ async function getBook(slug: string) {
 }
 
 export default async function BookPage({ params }: BookPageProps) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
   const { slug } = await params;
   const book = await getBook(slug);
 
   if (!book) {
+    notFound();
+  }
+
+  // Check access: user must be creator (personal) or team member
+  const hasAccess = await (async () => {
+    // Personal book created by user
+    if (!book.teamId && book.createdBy === session.user.id) {
+      return true;
+    }
+    // Team book - check membership
+    if (book.teamId) {
+      const teamIds = await getUserTeamIds(session.user.id);
+      return teamIds.includes(book.teamId);
+    }
+    // Admin can access all
+    if (session.user.role === "admin") {
+      return true;
+    }
+    return false;
+  })();
+
+  if (!hasAccess) {
     notFound();
   }
 

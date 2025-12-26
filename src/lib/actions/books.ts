@@ -18,6 +18,7 @@ export async function createBook(formData: FormData) {
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   const shelfId = formData.get("shelfId") as string;
+  const teamId = formData.get("teamId") as string | null;
 
   if (!name) {
     return { error: "Name is required" };
@@ -34,6 +35,7 @@ export async function createBook(formData: FormData) {
         slug,
         description,
         shelfId: shelfId || null,
+        teamId: teamId || null,
         createdBy: session!.user.id,
       })
       .returning();
@@ -61,6 +63,7 @@ export async function updateBook(id: string, formData: FormData) {
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   const shelfId = formData.get("shelfId") as string;
+  const teamId = formData.get("teamId") as string | null;
 
   if (!name) {
     return { error: "Name is required" };
@@ -73,6 +76,7 @@ export async function updateBook(id: string, formData: FormData) {
         name,
         description,
         shelfId: shelfId || null,
+        teamId: teamId || null,
         updatedAt: new Date(),
       })
       .where(eq(books.id, id))

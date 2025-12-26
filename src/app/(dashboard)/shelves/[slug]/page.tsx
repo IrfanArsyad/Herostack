@@ -1,7 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { db, shelves } from "@/lib/db";
 import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
+import { getUserTeamIds } from "@/lib/permissions";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,16 +48,46 @@ async function getShelf(slug: string) {
           chapters: true,
         },
       },
+      team: {
+        columns: { id: true, name: true, slug: true },
+      },
       createdByUser: true,
     },
   });
 }
 
 export default async function ShelfPage({ params }: ShelfPageProps) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
   const { slug } = await params;
   const shelf = await getShelf(slug);
 
   if (!shelf) {
+    notFound();
+  }
+
+  // Check access: user must be creator (personal) or team member
+  const hasAccess = await (async () => {
+    // Personal shelf created by user
+    if (!shelf.teamId && shelf.createdBy === session.user.id) {
+      return true;
+    }
+    // Team shelf - check membership
+    if (shelf.teamId) {
+      const teamIds = await getUserTeamIds(session.user.id);
+      return teamIds.includes(shelf.teamId);
+    }
+    // Admin can access all
+    if (session.user.role === "admin") {
+      return true;
+    }
+    return false;
+  })();
+
+  if (!hasAccess) {
     notFound();
   }
 

@@ -9,6 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -16,11 +23,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { updateShelf } from "@/lib/actions/shelves";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 import { use } from "react";
 
 interface EditShelfPageProps {
   params: Promise<{ slug: string }>;
+}
+
+interface Team {
+  id: string;
+  name: string;
+  slug: string;
+  role: string;
 }
 
 export default function EditShelfPage({ params }: EditShelfPageProps) {
@@ -29,25 +43,42 @@ export default function EditShelfPage({ params }: EditShelfPageProps) {
     id: string;
     name: string;
     description: string | null;
+    teamId: string | null;
   } | null>(null);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState("personal");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    async function fetchShelf() {
-      const response = await fetch(`/api/shelves/${slug}`);
-      if (response.ok) {
-        const data = await response.json();
+    async function fetchData() {
+      const [shelfRes, teamsRes] = await Promise.all([
+        fetch(`/api/shelves/${slug}`),
+        fetch("/api/my-teams"),
+      ]);
+
+      if (shelfRes.ok) {
+        const data = await shelfRes.json();
         setShelf(data);
+        setSelectedTeam(data.teamId || "personal");
+      }
+
+      if (teamsRes.ok) {
+        const teamsData = await teamsRes.json();
+        setTeams(teamsData);
       }
     }
-    fetchShelf();
+    fetchData();
   }, [slug]);
 
   async function handleSubmit(formData: FormData) {
     if (!shelf) return;
     setIsLoading(true);
     setError(null);
+
+    if (selectedTeam !== "personal") {
+      formData.set("teamId", selectedTeam);
+    }
 
     const result = await updateShelf(shelf.id, formData);
 
@@ -115,6 +146,34 @@ export default function EditShelfPage({ params }: EditShelfPageProps) {
                   rows={3}
                 />
               </div>
+
+              {teams.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Ownership
+                  </Label>
+                  <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select owner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="personal">Personal (only me)</SelectItem>
+                      {teams.map((team) => (
+                        <SelectItem key={team.id} value={team.id}>
+                          {team.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedTeam === "personal"
+                      ? "Only you can access this shelf"
+                      : "All team members can access this shelf"}
+                  </p>
+                </div>
+              )}
+
               <div className="flex gap-2">
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? "Saving..." : "Save Changes"}

@@ -1,20 +1,46 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { db, shelves } from "@/lib/db";
-import { desc } from "drizzle-orm";
+import { desc, eq, or, inArray, isNull, and } from "drizzle-orm";
 import { Card, CardContent } from "@/components/ui/card";
-import { Library, BookMarked, Eye, Pencil } from "lucide-react";
+import { Library, BookMarked, Eye, Pencil, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { QuickCreateShelf } from "@/components/quick-create";
+import { auth } from "@/lib/auth";
+import { getUserTeamIds } from "@/lib/permissions";
 
-async function getShelves() {
+async function getShelves(userId: string) {
+  const teamIds = await getUserTeamIds(userId);
+
+  // Get shelves that:
+  // 1. User created personally (no team)
+  // 2. Belong to teams the user is a member of
+  const conditions = [and(isNull(shelves.teamId), eq(shelves.createdBy, userId))];
+
+  if (teamIds.length > 0) {
+    conditions.push(inArray(shelves.teamId, teamIds));
+  }
+
   return db.query.shelves.findMany({
+    where: or(...conditions),
     orderBy: [desc(shelves.createdAt)],
-    with: { books: true },
+    with: {
+      books: true,
+      team: {
+        columns: { id: true, name: true, slug: true },
+      },
+    },
   });
 }
 
 export default async function ShelvesPage() {
-  const allShelves = await getShelves();
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
+  const allShelves = await getShelves(session.user.id);
 
   return (
     <div className="p-6 max-w-5xl mx-auto w-full">
@@ -34,13 +60,24 @@ export default async function ShelvesPage() {
       ) : (
         <div className="grid gap-2 sm:grid-cols-2">
           {allShelves.map((shelf) => (
-            <Card key={shelf.id} className="hover:bg-muted/50 transition-colors group">
+            <Card
+              key={shelf.id}
+              className="hover:bg-muted/50 transition-colors group"
+            >
               <CardContent className="py-3 px-4 flex items-center gap-3">
                 <div className="p-2 bg-purple-500/10 rounded">
                   <Library className="h-4 w-4 text-purple-500" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium text-sm truncate">{shelf.name}</div>
+                  <div className="font-medium text-sm truncate flex items-center gap-2">
+                    {shelf.name}
+                    {shelf.team && (
+                      <Badge variant="outline" className="text-xs font-normal">
+                        <Users className="h-3 w-3 mr-1" />
+                        {shelf.team.name}
+                      </Badge>
+                    )}
+                  </div>
                   <div className="text-xs text-muted-foreground flex items-center gap-1">
                     <BookMarked className="h-3 w-3" />
                     {shelf.books.length} book{shelf.books.length !== 1 ? "s" : ""}

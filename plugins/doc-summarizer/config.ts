@@ -1,6 +1,6 @@
 export const config = {
   gemini: {
-    model: "gemini-1.5-flash", // atau gemini-1.5-pro
+    model: "gemini-2.0-flash", // atau gemini-1.5-pro-latest
     maxOutputTokens: 4000,
   },
   scraper: {

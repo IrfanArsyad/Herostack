@@ -15,20 +15,41 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, Library } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Library, Users } from "lucide-react";
 import { createShelf } from "@/lib/actions/shelves";
 
+interface Team {
+  id: string;
+  name: string;
+  slug: string;
+  role: string;
+}
+
 interface QuickCreateShelfProps {
+  defaultTeamId?: string;
   trigger?: React.ReactNode;
   onSuccess?: () => void;
 }
 
-export function QuickCreateShelf({ trigger, onSuccess }: QuickCreateShelfProps) {
+export function QuickCreateShelf({
+  defaultTeamId,
+  trigger,
+  onSuccess,
+}: QuickCreateShelfProps) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState(defaultTeamId || "personal");
+  const [teams, setTeams] = useState<Team[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -36,6 +57,15 @@ export function QuickCreateShelf({ trigger, onSuccess }: QuickCreateShelfProps) 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (open) {
+      fetch("/api/my-teams")
+        .then((res) => res.json())
+        .then((data) => setTeams(data))
+        .catch(() => {});
+    }
+  }, [open]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,6 +77,9 @@ export function QuickCreateShelf({ trigger, onSuccess }: QuickCreateShelfProps) 
     const formData = new FormData();
     formData.set("name", name);
     formData.set("description", description);
+    if (selectedTeam !== "personal") {
+      formData.set("teamId", selectedTeam);
+    }
 
     const result = await createShelf(formData);
 
@@ -57,6 +90,7 @@ export function QuickCreateShelf({ trigger, onSuccess }: QuickCreateShelfProps) 
       setOpen(false);
       setName("");
       setDescription("");
+      setSelectedTeam(defaultTeamId || "personal");
       setShowAdvanced(false);
       onSuccess?.();
       router.refresh();
@@ -64,11 +98,13 @@ export function QuickCreateShelf({ trigger, onSuccess }: QuickCreateShelfProps) 
   }
 
   if (!mounted) {
-    return trigger || (
-      <Button>
-        <Plus className="mr-2 h-4 w-4" />
-        New Shelf
-      </Button>
+    return (
+      trigger || (
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          New Shelf
+        </Button>
+      )
     );
   }
 
@@ -115,6 +151,33 @@ export function QuickCreateShelf({ trigger, onSuccess }: QuickCreateShelfProps) 
               required
             />
           </div>
+
+          {teams.length > 0 && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Ownership
+              </Label>
+              <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select owner" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="personal">Personal (only me)</SelectItem>
+                  {teams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {selectedTeam === "personal"
+                  ? "Only you can access this shelf"
+                  : "All team members can access this shelf"}
+              </p>
+            </div>
+          )}
 
           {!showAdvanced ? (
             <button

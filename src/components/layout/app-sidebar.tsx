@@ -53,6 +53,7 @@ const navItems = [
   { title: "Books", href: "/books", icon: BookMarked },
   { title: "Pages", href: "/pages", icon: FileText },
   { title: "Tags", href: "/tags", icon: Tags },
+  { title: "Teams", href: "/teams", icon: Users },
 ];
 
 const pluginItems = [

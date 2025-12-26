@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FileText, Eye, Pencil, Search, X } from "lucide-react";
+import { FileText, Eye, Pencil, Search, X, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Page {
@@ -16,6 +16,7 @@ interface Page {
   draft: boolean;
   updatedAt: Date;
   book: { name: string } | null;
+  team?: { name: string } | null;
 }
 
 interface PagesListProps {
@@ -96,6 +97,12 @@ export function PagesList({ pages }: PagesListProps) {
                           className="text-[10px] px-1.5 py-0"
                         >
                           Draft
+                        </Badge>
+                      )}
+                      {page.team && (
+                        <Badge variant="outline" className="text-xs font-normal shrink-0">
+                          <Users className="h-3 w-3 mr-1" />
+                          {page.team.name}
                         </Badge>
                       )}
                     </div>

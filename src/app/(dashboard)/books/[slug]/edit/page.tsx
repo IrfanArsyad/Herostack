@@ -22,7 +22,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { updateBook } from "@/lib/actions/books";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 
 interface EditBookPageProps {
   params: Promise<{ slug: string }>;
@@ -33,6 +33,7 @@ interface Book {
   name: string;
   description: string | null;
   shelfId: string | null;
+  teamId: string | null;
 }
 
 interface Shelf {
@@ -40,30 +41,46 @@ interface Shelf {
   name: string;
 }
 
+interface Team {
+  id: string;
+  name: string;
+  slug: string;
+  role: string;
+}
+
 export default function EditBookPage({ params }: EditBookPageProps) {
   const { slug } = use(params);
   const [book, setBook] = useState<Book | null>(null);
   const [shelves, setShelves] = useState<Shelf[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [selectedShelf, setSelectedShelf] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState("personal");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
-      const [bookRes, shelvesRes] = await Promise.all([
+      const [bookRes, shelvesRes, teamsRes] = await Promise.all([
         fetch(`/api/books/${slug}`),
         fetch("/api/shelves"),
+        fetch("/api/my-teams"),
       ]);
 
       if (bookRes.ok) {
         const bookData = await bookRes.json();
         setBook(bookData);
         setSelectedShelf(bookData.shelfId || "none");
+        setSelectedTeam(bookData.teamId || "personal");
       }
 
       if (shelvesRes.ok) {
         const shelvesData = await shelvesRes.json();
         setShelves(shelvesData);
+      }
+
+      if (teamsRes.ok) {
+        const teamsData = await teamsRes.json();
+        setTeams(teamsData);
       }
     }
     fetchData();
@@ -75,6 +92,10 @@ export default function EditBookPage({ params }: EditBookPageProps) {
     setError(null);
 
     formData.set("shelfId", selectedShelf === "none" ? "" : selectedShelf);
+    if (selectedTeam !== "personal") {
+      formData.set("teamId", selectedTeam);
+    }
+
     const result = await updateBook(book.id, formData);
 
     if (result?.error) {
@@ -141,6 +162,34 @@ export default function EditBookPage({ params }: EditBookPageProps) {
                   rows={3}
                 />
               </div>
+
+              {teams.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Ownership
+                  </Label>
+                  <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select owner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="personal">Personal (only me)</SelectItem>
+                      {teams.map((team) => (
+                        <SelectItem key={team.id} value={team.id}>
+                          {team.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedTeam === "personal"
+                      ? "Only you can access this book"
+                      : "All team members can access this book"}
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="shelf">Shelf</Label>
                 <Select value={selectedShelf} onValueChange={setSelectedShelf}>
@@ -157,6 +206,7 @@ export default function EditBookPage({ params }: EditBookPageProps) {
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="flex gap-2">
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? "Saving..." : "Save Changes"}
