@@ -9,6 +9,10 @@
   Organize knowledge into Shelves, Books, Chapters, and Pages.
 </p>
 
+<p align="center">
+  <a href="./screenshot">View Screenshots</a>
+</p>
+
 ## Features
 
 ### Content Management
