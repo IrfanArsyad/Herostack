@@ -34,6 +34,7 @@ import {
   FileSearch,
   Users,
   Shield,
+  Tags,
 } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ const navItems = [
   { title: "Shelves", href: "/shelves", icon: Library },
   { title: "Books", href: "/books", icon: BookMarked },
   { title: "Pages", href: "/pages", icon: FileText },
+  { title: "Tags", href: "/tags", icon: Tags },
 ];
 
 const pluginItems = [

@@ -18,8 +18,14 @@
 - **Revision History** - Track changes and restore previous versions
 - **Tags System** - Organize content with tags across all entity types
 
+### Reading Experience
+- **Book Reader Modal** - Read entire books in a fullscreen modal with table of contents
+- **Quick Actions** - Hover to reveal Read/Edit buttons on all content lists
+- **Page Navigation** - Navigate between pages with prev/next buttons
+
 ### Search & Discovery
 - **Full-Text Search** - PostgreSQL-powered search across all content
+- **Pages Search** - Filter pages by name or book
 - **Ranked Results** - Results sorted by relevance with snippets
 - **Command Menu** - Quick navigation with Cmd+K
 
@@ -159,6 +165,7 @@ bun run start
 bun run db:push       # Push schema to database
 bun run db:generate   # Generate migrations
 bun run db:studio     # Open Drizzle Studio
+bun run db:seed       # Seed sample content (tutorial)
 ```
 
 ## License

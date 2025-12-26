@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, FolderOpen, Plus } from "lucide-react";
+import { FileText, FolderOpen, Plus, Eye, Pencil } from "lucide-react";
 import { SortableList } from "@/components/sortable-list";
 import { QuickCreatePage } from "@/components/quick-create";
 
@@ -81,20 +81,7 @@ function ChapterCard({
             <SortableList
               items={chapter.pages}
               type="pages"
-              renderItem={(page) => (
-                <Link
-                  href={`/pages/${page.slug}`}
-                  className="flex items-center gap-2 p-2 rounded-md hover:bg-muted transition-colors"
-                >
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span>{page.name}</span>
-                  {page.draft && (
-                    <Badge variant="outline" className="text-xs">
-                      Draft
-                    </Badge>
-                  )}
-                </Link>
-              )}
+              renderItem={(page) => <PageItem page={page} />}
             />
           </div>
         </CardContent>
@@ -105,18 +92,29 @@ function ChapterCard({
 
 function PageItem({ page }: { page: Page }) {
   return (
-    <Link
-      href={`/pages/${page.slug}`}
-      className="flex items-center gap-2 p-2 rounded-md hover:bg-muted transition-colors"
-    >
+    <div className="flex items-center gap-2 p-2 rounded-md hover:bg-muted transition-colors group">
       <FileText className="h-4 w-4 text-muted-foreground" />
-      <span>{page.name}</span>
+      <span className="flex-1">{page.name}</span>
       {page.draft && (
         <Badge variant="outline" className="text-xs">
           Draft
         </Badge>
       )}
-    </Link>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+          <Link href={`/pages/${page.slug}`}>
+            <Eye className="h-3.5 w-3.5 mr-1" />
+            Read
+          </Link>
+        </Button>
+        <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+          <Link href={`/pages/${page.slug}/edit`}>
+            <Pencil className="h-3.5 w-3.5 mr-1" />
+            Edit
+          </Link>
+        </Button>
+      </div>
+    </div>
   );
 }
 

@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -235,7 +234,7 @@ export function CommentsSection({ pageId, initialComments, currentUser }: Commen
               <Textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="min-h-[80px]"
+                className="min-h-[60px] text-sm"
               />
               <div className="flex gap-2">
                 <Button
@@ -314,7 +313,7 @@ export function CommentsSection({ pageId, initialComments, currentUser }: Commen
                 placeholder="Write a reply..."
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
-                className="min-h-[80px]"
+                className="min-h-[60px] text-sm"
               />
               <div className="flex gap-2">
                 <Button
@@ -358,14 +357,14 @@ export function CommentsSection({ pageId, initialComments, currentUser }: Commen
   };
 
   return (
-    <Card className="mt-8">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <MessageSquare className="h-5 w-5" />
+    <div className="mt-6 border rounded-lg">
+      <div className="px-4 py-3 border-b bg-muted/30">
+        <h3 className="flex items-center gap-2 text-sm font-medium">
+          <MessageSquare className="h-4 w-4" />
           Comments ({comments.reduce((acc, c) => acc + 1 + (c.replies?.length || 0), 0)})
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </h3>
+      </div>
+      <div className="p-4 space-y-4">
         {/* New comment form */}
         {currentUser ? (
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -380,7 +379,7 @@ export function CommentsSection({ pageId, initialComments, currentUser }: Commen
                 placeholder="Add a comment..."
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                className="min-h-[80px]"
+                className="min-h-[60px] text-sm"
               />
             </div>
             <div className="flex justify-end">
@@ -398,17 +397,17 @@ export function CommentsSection({ pageId, initialComments, currentUser }: Commen
 
         {/* Comments list */}
         {comments.length > 0 ? (
-          <div className="space-y-6 pt-4 border-t">
+          <div className="space-y-4 pt-3 border-t">
             {comments.map((comment) => (
               <CommentItem key={comment.id} comment={comment} />
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">
+          <p className="text-sm text-muted-foreground text-center py-3">
             No comments yet. Be the first to comment!
           </p>
         )}
-      </CardContent>
+      </div>
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
@@ -430,6 +429,6 @@ export function CommentsSection({ pageId, initialComments, currentUser }: Commen
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </div>
   );
 }

@@ -26,7 +26,9 @@ import {
   BookMarked,
   FileText,
   FolderOpen,
+  BookOpen,
 } from "lucide-react";
+import { BookReaderModal } from "@/components/book-reader/book-reader-modal";
 import { DeleteBookButton } from "./delete-button";
 import { QuickCreateChapter, QuickCreatePage } from "@/components/quick-create";
 import { BookContent } from "./book-content";
@@ -102,6 +104,15 @@ export default async function BookPage({ params }: BookPageProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <BookReaderModal
+              bookSlug={book.slug}
+              trigger={
+                <Button variant="secondary">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Read Book
+                </Button>
+              }
+            />
             <QuickCreateChapter
               defaultBookId={book.id}
               trigger={

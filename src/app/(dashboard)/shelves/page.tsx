@@ -2,7 +2,8 @@ import Link from "next/link";
 import { db, shelves } from "@/lib/db";
 import { desc } from "drizzle-orm";
 import { Card, CardContent } from "@/components/ui/card";
-import { Library, BookMarked } from "lucide-react";
+import { Library, BookMarked, Eye, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { QuickCreateShelf } from "@/components/quick-create";
 
 async function getShelves() {
@@ -33,22 +34,34 @@ export default async function ShelvesPage() {
       ) : (
         <div className="grid gap-2 sm:grid-cols-2">
           {allShelves.map((shelf) => (
-            <Link key={shelf.id} href={`/shelves/${shelf.slug}`}>
-              <Card className="hover:bg-muted/50 transition-colors">
-                <CardContent className="py-3 px-4 flex items-center gap-3">
-                  <div className="p-2 bg-purple-500/10 rounded">
-                    <Library className="h-4 w-4 text-purple-500" />
+            <Card key={shelf.id} className="hover:bg-muted/50 transition-colors group">
+              <CardContent className="py-3 px-4 flex items-center gap-3">
+                <div className="p-2 bg-purple-500/10 rounded">
+                  <Library className="h-4 w-4 text-purple-500" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-sm truncate">{shelf.name}</div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                    <BookMarked className="h-3 w-3" />
+                    {shelf.books.length} book{shelf.books.length !== 1 ? "s" : ""}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-medium text-sm truncate">{shelf.name}</div>
-                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      <BookMarked className="h-3 w-3" />
-                      {shelf.books.length} book{shelf.books.length !== 1 ? "s" : ""}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                </div>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+                    <Link href={`/shelves/${shelf.slug}`}>
+                      <Eye className="h-3.5 w-3.5 mr-1" />
+                      View
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+                    <Link href={`/shelves/${shelf.slug}/edit`}>
+                      <Pencil className="h-3.5 w-3.5 mr-1" />
+                      Edit
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}

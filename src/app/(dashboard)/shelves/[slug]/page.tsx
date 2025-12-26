@@ -25,7 +25,10 @@ import {
   Trash2,
   BookMarked,
   Library,
+  Eye,
+  BookOpen,
 } from "lucide-react";
+import { BookReaderModal } from "@/components/book-reader/book-reader-modal";
 import { DeleteShelfButton } from "./delete-button";
 import { ShelfTags } from "./shelf-tags";
 import { getTagsForEntity } from "@/lib/actions/tags";
@@ -130,31 +133,54 @@ export default async function ShelfPage({ params }: ShelfPageProps) {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {shelf.books.map((book) => (
-              <Link key={book.id} href={`/books/${book.slug}`}>
-                <Card className="h-full hover:border-primary transition-colors cursor-pointer">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-500/10 rounded-md">
-                        <BookMarked className="h-5 w-5 text-blue-500" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{book.name}</CardTitle>
-                        <CardDescription>
-                          {book.chapters.length} chapter
-                          {book.chapters.length !== 1 ? "s" : ""}
-                        </CardDescription>
-                      </div>
+              <Card key={book.id} className="h-full hover:border-primary transition-colors group">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-500/10 rounded-md">
+                      <BookMarked className="h-5 w-5 text-blue-500" />
                     </div>
-                  </CardHeader>
-                  {book.description && (
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {book.description}
-                      </p>
-                    </CardContent>
-                  )}
-                </Card>
-              </Link>
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg truncate">{book.name}</CardTitle>
+                      <CardDescription>
+                        {book.chapters.length} chapter
+                        {book.chapters.length !== 1 ? "s" : ""}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                {book.description && (
+                  <CardContent className="pt-0">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {book.description}
+                    </p>
+                  </CardContent>
+                )}
+                <CardContent className={book.description ? "pt-0" : ""}>
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <BookReaderModal
+                      bookSlug={book.slug}
+                      trigger={
+                        <Button variant="outline" size="sm" className="h-7 px-2 flex-1">
+                          <BookOpen className="h-3.5 w-3.5 mr-1" />
+                          Read
+                        </Button>
+                      }
+                    />
+                    <Button variant="outline" size="sm" className="h-7 px-2 flex-1" asChild>
+                      <Link href={`/books/${book.slug}`}>
+                        <Eye className="h-3.5 w-3.5 mr-1" />
+                        View
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" className="h-7 px-2 flex-1" asChild>
+                      <Link href={`/books/${book.slug}/edit`}>
+                        <Pencil className="h-3.5 w-3.5 mr-1" />
+                        Edit
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
