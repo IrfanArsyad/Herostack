@@ -104,6 +104,45 @@ bun run dev
 | `AUTH_GITHUB_ID` | No | GitHub OAuth Client ID |
 | `AUTH_GITHUB_SECRET` | No | GitHub OAuth Secret |
 
+## OAuth Setup
+
+### GitHub OAuth
+
+1. Go to https://github.com/settings/developers
+2. Click **"New OAuth App"**
+3. Fill in the form:
+   - **Application name:** HeroStack
+   - **Homepage URL:** `http://localhost:3056` (or your production URL)
+   - **Authorization callback URL:** `http://localhost:3056/api/auth/callback/github`
+4. Click **Register application**
+5. Copy **Client ID** and generate **Client Secret**
+6. Add to `.env`:
+   ```
+   AUTH_GITHUB_ID="your-client-id"
+   AUTH_GITHUB_SECRET="your-client-secret"
+   ```
+
+### Google OAuth
+
+1. Go to https://console.cloud.google.com/apis/credentials
+2. Create a new project or select an existing one
+3. Click **"Create Credentials"** → **"OAuth client ID"**
+4. If prompted, configure the OAuth consent screen first
+5. Select **Application type:** Web application
+6. Fill in:
+   - **Name:** HeroStack
+   - **Authorized JavaScript origins:** `http://localhost:3056`
+   - **Authorized redirect URIs:** `http://localhost:3056/api/auth/callback/google`
+7. Click **Create**
+8. Copy **Client ID** and **Client Secret**
+9. Add to `.env`:
+   ```
+   AUTH_GOOGLE_ID="your-client-id"
+   AUTH_GOOGLE_SECRET="your-client-secret"
+   ```
+
+> **Note:** For production, replace `http://localhost:3056` with your actual domain.
+
 ## Commands
 
 ```bash
