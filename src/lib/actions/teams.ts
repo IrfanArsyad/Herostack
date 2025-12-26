@@ -68,7 +68,7 @@ export async function getAllTeams({
   limit?: number;
   search?: string;
 }) {
-  const { authorized, error } = await requirePermission("admin");
+  const { authorized, error } = await requirePermission("users:manage");
   if (!authorized) {
     return { error };
   }

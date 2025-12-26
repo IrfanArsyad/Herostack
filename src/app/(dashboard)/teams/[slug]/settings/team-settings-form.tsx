@@ -37,7 +37,7 @@ export function TeamSettingsForm({
     startTransition(async () => {
       const result = await updateTeam(teamId, {
         name: name.trim(),
-        description: description.trim() || null,
+        description: description.trim() || undefined,
       });
 
       if (result.error) {
