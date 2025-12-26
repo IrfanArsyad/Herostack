@@ -295,7 +295,8 @@ export function TiptapEditor({
         const items = event.clipboardData?.items;
         if (!items) return false;
 
-        for (const item of items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
           if (item.type.startsWith("image/")) {
             event.preventDefault();
             const file = item.getAsFile();
@@ -307,6 +308,8 @@ export function TiptapEditor({
                   const node = state.schema.nodes.image.create({ src: url });
                   dispatch(tr.replaceSelectionWith(node));
                 }
+              }).catch((err) => {
+                console.error("Image upload failed:", err);
               });
               return true;
             }
