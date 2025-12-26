@@ -24,7 +24,7 @@ import { common, createLowlight } from "lowlight";
 import { Callout } from "./extensions/callout";
 import { EditorToolbar } from "./editor-toolbar";
 import { cn } from "@/lib/utils";
-import { useCallback, useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { htmlToMarkdown } from "@/lib/export/html-to-markdown";
 import { marked } from "marked";
@@ -102,11 +102,8 @@ export function TiptapEditor({
   const [editorType, setEditorType] = useState<"visual" | "markdown">("visual");
   const [markdownContent, setMarkdownContent] = useState("");
 
-  // Ref to hold the latest upload function - fixes closure issue in editor handlers
-  const uploadImageRef = useRef<(file: File) => Promise<string | null>>(null!);
-
-  // Upload image handler - defined first so other handlers can use it
-  const uploadImage = useCallback(async (file: File): Promise<string | null> => {
+  // Upload image function - stable reference
+  const uploadImage = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append("file", file);
 
@@ -119,17 +116,19 @@ export function TiptapEditor({
       if (response.ok) {
         const data = await response.json();
         return data.url;
+      } else {
+        const error = await response.json();
+        console.error("Upload failed:", error);
       }
     } catch (error) {
       console.error("Upload failed:", error);
     }
     return null;
-  }, []);
+  };
 
-  // Keep the ref updated with the latest upload function
-  useEffect(() => {
-    uploadImageRef.current = uploadImage;
-  }, [uploadImage]);
+  // Ref to hold the upload function - initialized immediately
+  const uploadImageRef = useRef(uploadImage);
+  uploadImageRef.current = uploadImage;
 
   // Handle editor type change
   const handleEditorTypeChange = useCallback((value: string) => {
@@ -164,7 +163,7 @@ export function TiptapEditor({
           const start = e.currentTarget.selectionStart ?? markdownContent.length;
           const end = e.currentTarget.selectionEnd ?? markdownContent.length;
 
-          const url = await uploadImage(file);
+          const url = await uploadImageRef.current(file);
           if (url) {
             const imageMarkdown = `![image](${url})`;
             const newText = markdownContent.substring(0, start) + imageMarkdown + markdownContent.substring(end);
@@ -174,7 +173,7 @@ export function TiptapEditor({
         return;
       }
     }
-  }, [uploadImage, markdownContent, handleMarkdownChange]);
+  }, [markdownContent, handleMarkdownChange]);
 
   // Handle drop image in markdown mode
   const handleMarkdownDrop = useCallback(async (e: React.DragEvent<HTMLTextAreaElement>) => {
@@ -184,14 +183,14 @@ export function TiptapEditor({
     const file = files[0];
     if (file.type.startsWith("image/")) {
       e.preventDefault();
-      const url = await uploadImage(file);
+      const url = await uploadImageRef.current(file);
       if (url) {
         const imageMarkdown = `![image](${url})\n`;
         const newText = markdownContent + imageMarkdown;
         handleMarkdownChange(newText);
       }
     }
-  }, [uploadImage, markdownContent, handleMarkdownChange]);
+  }, [markdownContent, handleMarkdownChange]);
 
   const editor = useEditor({
     immediatelyRender: false,
