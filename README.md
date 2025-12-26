@@ -10,7 +10,11 @@
 </p>
 
 <p align="center">
-  <a href="./screenshot">View Screenshots</a>
+  <img src="./screenshot/Herostack.png" alt="HeroStack Preview" width="800">
+</p>
+
+<p align="center">
+  <a href="./screenshot">View More Screenshots</a>
 </p>
 
 ## Features
