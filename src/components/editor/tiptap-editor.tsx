@@ -24,7 +24,7 @@ import { common, createLowlight } from "lowlight";
 import { Callout } from "./extensions/callout";
 import { EditorToolbar } from "./editor-toolbar";
 import { cn } from "@/lib/utils";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { htmlToMarkdown } from "@/lib/export/html-to-markdown";
 import { marked } from "marked";
@@ -102,6 +102,9 @@ export function TiptapEditor({
   const [editorType, setEditorType] = useState<"visual" | "markdown">("visual");
   const [markdownContent, setMarkdownContent] = useState("");
 
+  // Ref to hold the latest upload function - fixes closure issue in editor handlers
+  const uploadImageRef = useRef<(file: File) => Promise<string | null>>(null!);
+
   // Upload image handler - defined first so other handlers can use it
   const uploadImage = useCallback(async (file: File): Promise<string | null> => {
     const formData = new FormData();
@@ -122,6 +125,11 @@ export function TiptapEditor({
     }
     return null;
   }, []);
+
+  // Keep the ref updated with the latest upload function
+  useEffect(() => {
+    uploadImageRef.current = uploadImage;
+  }, [uploadImage]);
 
   // Handle editor type change
   const handleEditorTypeChange = useCallback((value: string) => {
@@ -293,7 +301,7 @@ export function TiptapEditor({
             event.preventDefault();
             const file = item.getAsFile();
             if (file) {
-              uploadImage(file).then((url) => {
+              uploadImageRef.current(file).then((url) => {
                 if (url) {
                   const { state, dispatch } = view;
                   const { tr } = state;
@@ -317,7 +325,7 @@ export function TiptapEditor({
         const file = files[0];
         if (file.type.startsWith("image/")) {
           event.preventDefault();
-          uploadImage(file).then((url) => {
+          uploadImageRef.current(file).then((url) => {
             if (url) {
               const { state, dispatch } = view;
               const { tr } = state;
