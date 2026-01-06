@@ -53,3 +53,7 @@ public/uploads/
 
 # project tasks
 TASKS.md
+
+# Runtime files
+update.log
+update.status
