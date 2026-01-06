@@ -74,14 +74,26 @@
 - **Editor**: TipTap
 - **Runtime**: Bun
 
-## Quick Start
+## Quick Install
+
+```bash
+git clone https://github.com/IrfanArsyad/Herostack.git
+cd Herostack
+./install.sh
+```
+
+The installer will guide you through:
+- **Docker mode** - Includes PostgreSQL, recommended for quick setup
+- **Manual mode** - Requires existing PostgreSQL, for custom deployments
+
+## Manual Setup
 
 ### Docker Compose
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/herostack.git
-cd herostack
+git clone https://github.com/IrfanArsyad/Herostack.git
+cd Herostack
 
 # Setup environment
 cp .env.example .env
@@ -92,15 +104,15 @@ openssl rand -base64 32
 # Run containers
 docker compose up -d
 
-# Run database migration (first time only)
-docker compose exec app bun run db:push
-
 # Open http://localhost:3056
 ```
 
 ### Local Development
 
 ```bash
+# Install Bun (if not installed)
+curl -fsSL https://bun.sh/install | bash
+
 # Install dependencies
 bun install
 
