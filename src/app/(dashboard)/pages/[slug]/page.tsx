@@ -137,17 +137,17 @@ export default async function PageView({ params }: PageViewProps) {
       <div className="p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header section */}
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-muted rounded-lg">
-                <FileText className="h-8 w-8 text-muted-foreground" />
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div className="p-2 sm:p-3 bg-muted rounded-lg shrink-0">
+                <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-3xl font-bold">{page.name}</h1>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl sm:text-3xl font-bold truncate">{page.name}</h1>
                   {page.draft && <Badge variant="outline">Draft</Badge>}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Last updated{" "}
                   {formatDistanceToNow(new Date(page.updatedAt), {
                     addSuffix: true,
@@ -159,17 +159,18 @@ export default async function PageView({ params }: PageViewProps) {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <ShareDialog
                 pageId={page.id}
                 pageName={page.name}
                 initialIsPublic={page.isPublic}
                 initialShareToken={page.shareToken}
               />
-              <Button asChild>
+              <Button asChild size="sm" className="sm:size-default">
                 <Link href={`/pages/${page.slug}/edit`}>
                   <Pencil className="mr-2 h-4 w-4" />
-                  Edit
+                  <span className="hidden sm:inline">Edit</span>
+                  <span className="sm:hidden">Edit</span>
                 </Link>
               </Button>
               <DropdownMenu>

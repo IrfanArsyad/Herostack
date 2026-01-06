@@ -145,10 +145,18 @@ setup_env_docker() {
     sed_replace "AUTH_SECRET" "$AUTH_SECRET"
     print_status "AUTH_SECRET generated"
 
-    # Database URL for Docker
-    DATABASE_URL="postgres://herostack:herostack123@postgres:5432/herostack"
+    # Generate random database password for Docker
+    DB_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 20)
+    DATABASE_URL="postgres://herostack:${DB_PASSWORD}@postgres:5432/herostack"
     sed_replace "DATABASE_URL" "$DATABASE_URL"
-    print_status "Database URL configured for Docker"
+
+    # Update docker-compose.yml with the new password
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=${DB_PASSWORD}|" docker-compose.yml
+    else
+        sed -i "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=${DB_PASSWORD}|" docker-compose.yml
+    fi
+    print_status "Database URL configured with secure password"
 
     # App URL
     echo ""
@@ -319,9 +327,12 @@ setup_env_manual() {
     read -p "PostgreSQL User [herostack]: " DB_USER
     DB_USER=${DB_USER:-herostack}
 
-    read -sp "PostgreSQL Password [herostack123]: " DB_PASS
-    DB_PASS=${DB_PASS:-herostack123}
+    read -sp "PostgreSQL Password (required): " DB_PASS
     echo ""
+    if [ -z "$DB_PASS" ]; then
+        print_error "Password is required"
+        exit 1
+    fi
 
     DATABASE_URL="postgres://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME"
     sed_replace "DATABASE_URL" "$DATABASE_URL"

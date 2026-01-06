@@ -13,8 +13,10 @@ export async function GET(request: NextRequest) {
   }
 
   const searchParams = request.nextUrl.searchParams;
-  const page = parseInt(searchParams.get("page") ?? "1");
-  const limit = parseInt(searchParams.get("limit") ?? "10");
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
+  const requestedLimit = parseInt(searchParams.get("limit") ?? "10");
+  // Cap limit at 100 to prevent DoS attacks
+  const limit = Math.min(Math.max(1, requestedLimit), 100);
   const search = searchParams.get("search") ?? "";
   const sortBy = (searchParams.get("sortBy") ?? "createdAt") as "name" | "email" | "role" | "createdAt";
   const sortOrder = (searchParams.get("sortOrder") ?? "desc") as "asc" | "desc";

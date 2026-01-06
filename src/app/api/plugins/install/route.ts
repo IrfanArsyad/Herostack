@@ -25,6 +25,66 @@ interface PluginManifest {
 
 const PLUGINS_DIR = path.join(process.cwd(), "plugins");
 
+// Validate plugin manifest structure
+function validateManifest(manifest: unknown): { valid: boolean; error?: string } {
+  if (!manifest || typeof manifest !== "object") {
+    return { valid: false, error: "Manifest must be a valid JSON object" };
+  }
+
+  const m = manifest as Record<string, unknown>;
+
+  // Required fields
+  if (!m.id || typeof m.id !== "string") {
+    return { valid: false, error: "Manifest must have a valid 'id' field (string)" };
+  }
+
+  if (!m.name || typeof m.name !== "string") {
+    return { valid: false, error: "Manifest must have a valid 'name' field (string)" };
+  }
+
+  if (!m.version || typeof m.version !== "string") {
+    return { valid: false, error: "Manifest must have a valid 'version' field (string)" };
+  }
+
+  // Validate id format (alphanumeric with hyphens only)
+  if (!/^[a-z0-9-]+$/.test(m.id)) {
+    return { valid: false, error: "Plugin id must contain only lowercase letters, numbers, and hyphens" };
+  }
+
+  // Validate version format (semver-like)
+  if (!/^\d+\.\d+\.\d+/.test(m.version)) {
+    return { valid: false, error: "Version must be in semver format (e.g., 1.0.0)" };
+  }
+
+  // Optional fields validation
+  if (m.description !== undefined && typeof m.description !== "string") {
+    return { valid: false, error: "'description' must be a string" };
+  }
+
+  if (m.author !== undefined && typeof m.author !== "string") {
+    return { valid: false, error: "'author' must be a string" };
+  }
+
+  // Validate menuItems if present
+  if (m.menuItems !== undefined) {
+    if (!Array.isArray(m.menuItems)) {
+      return { valid: false, error: "'menuItems' must be an array" };
+    }
+
+    for (let i = 0; i < m.menuItems.length; i++) {
+      const item = m.menuItems[i] as Record<string, unknown>;
+      if (!item.title || typeof item.title !== "string") {
+        return { valid: false, error: `menuItems[${i}] must have a valid 'title' field` };
+      }
+      if (!item.href || typeof item.href !== "string") {
+        return { valid: false, error: `menuItems[${i}] must have a valid 'href' field` };
+      }
+    }
+  }
+
+  return { valid: true };
+}
+
 export async function POST(request: NextRequest) {
   // Check authentication
   const session = await auth();
@@ -71,7 +131,28 @@ export async function POST(request: NextRequest) {
 
     if (manifestFile) {
       const content = await manifestFile.async("string");
-      manifest = JSON.parse(content);
+
+      // Safe JSON parsing with try-catch
+      let parsedManifest: unknown;
+      try {
+        parsedManifest = JSON.parse(content);
+      } catch {
+        return NextResponse.json(
+          { error: "Invalid plugin.json: JSON parsing failed" },
+          { status: 400 }
+        );
+      }
+
+      // Validate manifest structure
+      const validation = validateManifest(parsedManifest);
+      if (!validation.valid) {
+        return NextResponse.json(
+          { error: `Invalid plugin manifest: ${validation.error}` },
+          { status: 400 }
+        );
+      }
+
+      manifest = parsedManifest as PluginManifest;
 
       // Determine root directory
       if (manifestFile.name.includes("/")) {
@@ -158,7 +239,15 @@ export async function POST(request: NextRequest) {
 
       if (!targetPath) continue;
 
-      const fullPath = path.join(pluginDir, targetPath);
+      // Security: Prevent path traversal attacks
+      const fullPath = path.normalize(path.join(pluginDir, targetPath));
+
+      // Verify the resolved path is still within plugin directory
+      if (!fullPath.startsWith(pluginDir + path.sep) && fullPath !== pluginDir) {
+        console.warn(`Path traversal attempt detected: ${filePath}`);
+        continue; // Skip malicious files
+      }
+
       const dirPath = path.dirname(fullPath);
 
       // Create directory if needed
