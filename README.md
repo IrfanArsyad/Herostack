@@ -54,6 +54,12 @@
 - **PDF Export** - Export pages, chapters, or entire books
 - **Markdown Export** - Download content as Markdown files
 
+### Plugin System
+- **ZIP Installation** - Install plugins by uploading ZIP files
+- **Plugin Management** - Enable, disable, or uninstall plugins from Admin panel
+- **Dynamic Menu** - Installed plugins appear in sidebar automatically
+- **Plugin Marketplace** - Extend functionality with third-party plugins
+
 ### Authentication
 - Email/Password login
 - Google OAuth
@@ -179,6 +185,42 @@ bun run db:push       # Push schema to database
 bun run db:generate   # Generate migrations
 bun run db:studio     # Open Drizzle Studio
 bun run db:seed       # Seed sample content (tutorial)
+```
+
+## Plugins
+
+### Installing Plugins
+
+1. Download plugin ZIP file
+2. Go to **Admin → Plugins**
+3. Drag & drop or click to upload ZIP
+4. Plugin will be installed and activated automatically
+
+### Available Plugins
+
+| Plugin | Description |
+|--------|-------------|
+| [IP Whitelist](https://github.com/IrfanArsyad/herostack-whitelist) | Restrict access by IP address |
+| [Doc Summarizer](https://github.com/IrfanArsyad/herostack-doc-summarizer) | Summarize docs from URL using AI |
+
+### Creating Plugins
+
+Plugins require a `plugin.json` manifest:
+
+```json
+{
+  "id": "my-plugin",
+  "name": "My Plugin",
+  "version": "1.0.0",
+  "description": "Plugin description",
+  "author": "Your Name",
+  "menuItems": [
+    {
+      "title": "Menu Title",
+      "href": "/my-plugin-page"
+    }
+  ]
+}
 ```
 
 ## License
