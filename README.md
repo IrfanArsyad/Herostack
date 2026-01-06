@@ -203,26 +203,6 @@ bun run db:seed       # Seed sample content (tutorial)
 | [IP Whitelist](https://github.com/IrfanArsyad/herostack-whitelist) | Restrict access by IP address |
 | [Doc Summarizer](https://github.com/IrfanArsyad/herostack-doc-summarizer) | Summarize docs from URL using AI |
 
-### Creating Plugins
-
-Plugins require a `plugin.json` manifest:
-
-```json
-{
-  "id": "my-plugin",
-  "name": "My Plugin",
-  "version": "1.0.0",
-  "description": "Plugin description",
-  "author": "Your Name",
-  "menuItems": [
-    {
-      "title": "Menu Title",
-      "href": "/my-plugin-page"
-    }
-  ]
-}
-```
-
 ## License
 
 MIT
