@@ -289,6 +289,34 @@ export const comments = pgTable("comments", {
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
+// ============ PLUGINS ============
+
+export const pluginStatusEnum = pgEnum("plugin_status", [
+  "active",
+  "inactive",
+  "error",
+]);
+
+export const plugins = pgTable("plugins", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  pluginId: text("plugin_id").unique().notNull(), // e.g., "doc-summarizer"
+  name: text("name").notNull(),
+  version: text("version").notNull(),
+  description: text("description"),
+  author: text("author"),
+  status: pluginStatusEnum("status").default("active").notNull(),
+  path: text("path").notNull(), // Path to plugin directory
+  menuItems: text("menu_items"), // JSON string of menu items
+  settings: text("settings"), // JSON string of plugin settings
+  installedBy: text("installed_by").references(() => users.id, {
+    onDelete: "set null",
+  }),
+  installedAt: timestamp("installed_at", { mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+
 // ============ ACTIVITY LOG ============
 
 export const activities = pgTable("activities", {
@@ -482,3 +510,6 @@ export type NewComment = typeof comments.$inferInsert;
 
 export type Activity = typeof activities.$inferSelect;
 export type NewActivity = typeof activities.$inferInsert;
+
+export type InstalledPlugin = typeof plugins.$inferSelect;
+export type NewInstalledPlugin = typeof plugins.$inferInsert;

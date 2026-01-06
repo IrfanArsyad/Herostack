@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { eq } from "drizzle-orm";
+import * as schema from "@/lib/db/schema";
 
 export async function POST(request: Request) {
   try {
@@ -8,43 +11,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { url, bookName, language, model, apiKey } = await request.json();
-
-    if (!url) {
-      return NextResponse.json({ error: "URL is required" }, { status: 400 });
-    }
-
-    if (!apiKey) {
-      return NextResponse.json({ error: "Gemini API Key is required" }, { status: 400 });
-    }
-
-    // Validate URL
-    try {
-      new URL(url);
-    } catch {
-      return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
-    }
-
-    // Dynamic import plugin modules
-    const { scrapeUrl } = await import("../../../../../plugins/doc-summarizer/lib/scraper");
-    const { summarizeContent } = await import("../../../../../plugins/doc-summarizer/lib/summarizer");
-    const { generateBookStructure } = await import("../../../../../plugins/doc-summarizer/lib/book-generator");
-
-    // Step 1: Scrape the URL
-    const scrapeResult = await scrapeUrl(url);
-
-    // Step 2: Summarize with Gemini
-    const summaryResult = await summarizeContent(scrapeResult, {
-      language: language || "id",
-      bookName: bookName || undefined,
-      apiKey,
-      model,
+    // Check if doc-summarizer plugin is installed
+    const plugin = await db.query.plugins.findFirst({
+      where: eq(schema.plugins.pluginId, "doc-summarizer"),
     });
 
-    // Step 3: Generate book structure
-    const book = generateBookStructure(summaryResult);
+    if (!plugin || plugin.status !== "active") {
+      return NextResponse.json(
+        {
+          error: "Doc Summarizer plugin is not installed. Please install it from Admin → Plugins.",
+        },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json(book);
+    // Plugin is installed but API functionality needs the plugin files
+    // This endpoint is a placeholder - actual functionality requires plugin installation
+    return NextResponse.json(
+      {
+        error: "Plugin API not available. Please reinstall the Doc Summarizer plugin.",
+      },
+      { status: 501 }
+    );
   } catch (error) {
     console.error("Summarization error:", error);
     return NextResponse.json(

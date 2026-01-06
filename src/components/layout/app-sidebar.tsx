@@ -30,15 +30,19 @@ import {
   Search,
   LogOut,
   ChevronUp,
-  Plus,
-  FileSearch,
   Users,
   Shield,
   Tags,
   Github,
+  Puzzle,
 } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
+
+interface PluginItem {
+  title: string;
+  href: string;
+}
 
 interface AppSidebarProps {
   user: {
@@ -47,6 +51,7 @@ interface AppSidebarProps {
     image?: string | null;
     role?: string;
   };
+  pluginItems?: PluginItem[];
 }
 
 const navItems = [
@@ -57,15 +62,12 @@ const navItems = [
   { title: "Teams", href: "/teams", icon: Users },
 ];
 
-const pluginItems = [
-  { title: "Summarize Docs", href: "/summarizer", icon: FileSearch },
-];
-
 const adminItems = [
   { title: "User Management", href: "/admin/users", icon: Users },
+  { title: "Plugins", href: "/admin/plugins", icon: Puzzle },
 ];
 
-export function AppSidebar({ user }: AppSidebarProps) {
+export function AppSidebar({ user, pluginItems = [] }: AppSidebarProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
@@ -138,30 +140,32 @@ export function AppSidebar({ user }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Plugins */}
-        <SidebarGroup>
-          <div className="px-2 py-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Plugins</span>
-          </div>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {pluginItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname.startsWith(item.href)}
-                    className="h-9"
-                  >
-                    <Link href={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Plugins - only show if there are installed plugins */}
+        {pluginItems.length > 0 && (
+          <SidebarGroup>
+            <div className="px-2 py-1.5">
+              <span className="text-xs font-medium text-muted-foreground">Plugins</span>
+            </div>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {pluginItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname.startsWith(item.href)}
+                      className="h-9"
+                    >
+                      <Link href={item.href}>
+                        <Puzzle className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {/* Admin (only for admin users) */}
         {user.role === "admin" && (
