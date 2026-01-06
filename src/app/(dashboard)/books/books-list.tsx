@@ -91,66 +91,110 @@ export function BooksList({ books }: BooksListProps) {
         <div className="grid gap-2 sm:grid-cols-2">
           {filteredBooks.map((book) => (
             <Card key={book.id} className="hover:bg-muted/50 transition-colors group relative">
-              {/* Share button - top right corner */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => handleShare(book)}
-                title="Copy link"
-              >
-                <Share2 className="h-3.5 w-3.5" />
-              </Button>
-
-              {/* Team badge - bottom right corner */}
-              {book.team && (
-                <Badge variant="outline" className="absolute bottom-2 right-2 text-xs font-normal">
-                  <Users className="h-3 w-3 mr-1" />
-                  {book.team.name}
-                </Badge>
-              )}
-
-              <CardContent className="py-3 px-4 flex items-center gap-3 pr-12">
-                <div className="p-2 bg-blue-500/10 rounded">
-                  <BookMarked className="h-4 w-4 text-blue-500" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="font-medium text-sm truncate">
-                    {book.name}
+              <CardContent className="py-3 px-4">
+                {/* Mobile layout */}
+                <div className="flex flex-col gap-2 sm:hidden">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-blue-500/10 rounded shrink-0">
+                      <BookMarked className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm line-clamp-2">
+                        {book.name}
+                      </div>
+                      {book.shelf && (
+                        <div className="text-xs text-muted-foreground truncate">
+                          {book.shelf.name}
+                        </div>
+                      )}
+                      {book.team && (
+                        <Badge variant="outline" className="text-xs font-normal mt-1">
+                          <Users className="h-3 w-3 mr-1" />
+                          {book.team.name}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  {book.shelf && (
-                    <div className="text-xs text-muted-foreground truncate">
-                      {book.shelf.name}
-                    </div>
-                  )}
-                  {book.description && !book.shelf && (
-                    <div className="text-xs text-muted-foreground truncate">
-                      {book.description}
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1 justify-end border-t pt-2 -mx-4 px-4">
+                    <BookReaderModal
+                      bookSlug={book.slug}
+                      trigger={
+                        <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                          <BookOpen className="h-3.5 w-3.5 mr-1" />
+                          Read
+                        </Button>
+                      }
+                    />
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" asChild>
+                      <Link href={`/books/${book.slug}`}>
+                        <Eye className="h-3.5 w-3.5 mr-1" />
+                        View
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" asChild>
+                      <Link href={`/books/${book.slug}/edit`}>
+                        <Pencil className="h-3.5 w-3.5 mr-1" />
+                        Edit
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleShare(book)}>
+                      <Share2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <BookReaderModal
-                    bookSlug={book.slug}
-                    trigger={
-                      <Button variant="ghost" size="sm" className="h-7 px-2">
-                        <BookOpen className="h-3.5 w-3.5 mr-1" />
-                        Read
-                      </Button>
-                    }
-                  />
-                  <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                    <Link href={`/books/${book.slug}`}>
-                      <Eye className="h-3.5 w-3.5 mr-1" />
-                      View
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                    <Link href={`/books/${book.slug}/edit`}>
-                      <Pencil className="h-3.5 w-3.5 mr-1" />
-                      Edit
-                    </Link>
-                  </Button>
+
+                {/* Desktop layout */}
+                <div className="hidden sm:flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/10 rounded shrink-0">
+                    <BookMarked className="h-4 w-4 text-blue-500" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-sm truncate">
+                      {book.name}
+                    </div>
+                    {book.shelf && (
+                      <div className="text-xs text-muted-foreground truncate">
+                        {book.shelf.name}
+                      </div>
+                    )}
+                    {book.description && !book.shelf && (
+                      <div className="text-xs text-muted-foreground truncate">
+                        {book.description}
+                      </div>
+                    )}
+                  </div>
+                  {book.team && (
+                    <Badge variant="outline" className="text-xs font-normal shrink-0">
+                      <Users className="h-3 w-3 mr-1" />
+                      {book.team.name}
+                    </Badge>
+                  )}
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <BookReaderModal
+                      bookSlug={book.slug}
+                      trigger={
+                        <Button variant="ghost" size="sm" className="h-7 px-2">
+                          <BookOpen className="h-3.5 w-3.5 mr-1" />
+                          Read
+                        </Button>
+                      }
+                    />
+                    <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+                      <Link href={`/books/${book.slug}`}>
+                        <Eye className="h-3.5 w-3.5 mr-1" />
+                        View
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+                      <Link href={`/books/${book.slug}/edit`}>
+                        <Pencil className="h-3.5 w-3.5 mr-1" />
+                        Edit
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleShare(book)}>
+                      <Share2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

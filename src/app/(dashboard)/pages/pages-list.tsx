@@ -83,65 +83,102 @@ export function PagesList({ pages }: PagesListProps) {
               key={page.id}
               className="hover:bg-muted/50 transition-colors group"
             >
-              <CardContent className="py-3 px-4 flex items-center justify-between">
-                <div className="flex items-center gap-3 min-w-0">
-                  <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm truncate">
-                        {page.name}
-                      </span>
-                      {page.draft && (
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] px-1.5 py-0"
-                        >
-                          Draft
-                        </Badge>
-                      )}
-                      {page.team && (
-                        <Badge variant="outline" className="text-xs font-normal shrink-0">
-                          <Users className="h-3 w-3 mr-1" />
-                          {page.team.name}
-                        </Badge>
-                      )}
-                    </div>
-                    {page.book && (
-                      <div className="text-xs text-muted-foreground truncate">
-                        {page.book.name}
+              <CardContent className="py-3 px-4">
+                {/* Mobile layout */}
+                <div className="flex flex-col gap-2 sm:hidden">
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="font-medium text-sm">
+                          {page.name}
+                        </span>
+                        {page.draft && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            Draft
+                          </Badge>
+                        )}
                       </div>
-                    )}
+                      {page.book && (
+                        <div className="text-xs text-muted-foreground truncate">
+                          {page.book.name}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(page.updatedAt), { addSuffix: true })}
+                        </span>
+                        {page.team && (
+                          <Badge variant="outline" className="text-xs font-normal">
+                            <Users className="h-3 w-3 mr-1" />
+                            {page.team.name}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    {formatDistanceToNow(new Date(page.updatedAt), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2"
-                      asChild
-                    >
+                  <div className="flex items-center gap-1 justify-end border-t pt-2 -mx-4 px-4">
+                    <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
                       <Link href={`/pages/${page.slug}`}>
                         <Eye className="h-3.5 w-3.5 mr-1" />
                         Read
                       </Link>
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2"
-                      asChild
-                    >
+                    <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
                       <Link href={`/pages/${page.slug}/edit`}>
                         <Pencil className="h-3.5 w-3.5 mr-1" />
                         Edit
                       </Link>
                     </Button>
+                  </div>
+                </div>
+
+                {/* Desktop layout */}
+                <div className="hidden sm:flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm truncate">
+                          {page.name}
+                        </span>
+                        {page.draft && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            Draft
+                          </Badge>
+                        )}
+                        {page.team && (
+                          <Badge variant="outline" className="text-xs font-normal shrink-0">
+                            <Users className="h-3 w-3 mr-1" />
+                            {page.team.name}
+                          </Badge>
+                        )}
+                      </div>
+                      {page.book && (
+                        <div className="text-xs text-muted-foreground truncate">
+                          {page.book.name}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(page.updatedAt), { addSuffix: true })}
+                    </span>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+                        <Link href={`/pages/${page.slug}`}>
+                          <Eye className="h-3.5 w-3.5 mr-1" />
+                          Read
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+                        <Link href={`/pages/${page.slug}/edit`}>
+                          <Pencil className="h-3.5 w-3.5 mr-1" />
+                          Edit
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>

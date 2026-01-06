@@ -143,7 +143,120 @@ export function UsersTable({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
+        {/* Mobile card layout */}
+        <div className="space-y-3 md:hidden">
+          {users.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">
+              No users found
+            </div>
+          ) : (
+            users.map((user) => (
+              <div key={user.id} className="rounded-lg border p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar className="h-10 w-10 shrink-0">
+                      <AvatarImage src={user.image ?? undefined} />
+                      <AvatarFallback>
+                        {user.name?.charAt(0)?.toUpperCase() ?? "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <div className="font-medium truncate">
+                        {user.name ?? "Unnamed User"}
+                        {user.id === currentUserId && (
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            You
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground truncate">
+                        {user.email}
+                      </div>
+                    </div>
+                  </div>
+                  {user.id !== currentUserId && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive shrink-0"
+                          disabled={isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete User</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete{" "}
+                            <strong>{user.name ?? user.email}</strong>? This
+                            action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2 pt-2 border-t">
+                  <div className="text-xs text-muted-foreground">
+                    Joined {new Date(user.createdAt).toLocaleDateString()}
+                  </div>
+                  {user.id === currentUserId ? (
+                    <Badge className={roleColors[user.role]}>
+                      <span className="flex items-center gap-1">
+                        {roleIcons[user.role]}
+                        {user.role}
+                      </span>
+                    </Badge>
+                  ) : (
+                    <Select
+                      value={user.role}
+                      onValueChange={(value) =>
+                        handleRoleChange(user.id, value as UserRole)
+                      }
+                      disabled={isPending}
+                    >
+                      <SelectTrigger className="w-[110px] h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">
+                          <span className="flex items-center gap-2">
+                            <Shield className="h-3 w-3" /> Admin
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="editor">
+                          <span className="flex items-center gap-2">
+                            <Pencil className="h-3 w-3" /> Editor
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="viewer">
+                          <span className="flex items-center gap-2">
+                            <Eye className="h-3 w-3" /> Viewer
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop table layout */}
+        <div className="rounded-md border hidden md:block">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="border-b bg-muted/50">
@@ -274,11 +387,11 @@ export function UsersTable({
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+            <p className="text-sm text-muted-foreground order-2 sm:order-1">
               Page {page} of {totalPages}
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 order-1 sm:order-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -286,7 +399,7 @@ export function UsersTable({
                 disabled={page <= 1 || isPending}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Previous
+                <span className="hidden sm:inline">Previous</span>
               </Button>
               <Button
                 variant="outline"
@@ -294,7 +407,7 @@ export function UsersTable({
                 onClick={() => handlePageChange(page + 1)}
                 disabled={page >= totalPages || isPending}
               >
-                Next
+                <span className="hidden sm:inline">Next</span>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>

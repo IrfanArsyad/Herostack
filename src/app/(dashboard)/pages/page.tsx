@@ -68,9 +68,9 @@ export default async function PagesPage() {
   const allPages = await getPages(session.user.id);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto w-full">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Pages</h1>
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Pages</h1>
         <QuickCreatePage />
       </div>
 
