@@ -30,10 +30,10 @@ export default async function AdminPluginsPage() {
   }));
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Plugin Management</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-xl sm:text-2xl font-bold">Plugin Management</h1>
+        <p className="text-sm text-muted-foreground">
           Install and manage plugins from ZIP files
         </p>
       </div>

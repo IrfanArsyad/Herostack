@@ -13,6 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -70,10 +71,17 @@ const adminItems = [
 export function AppSidebar({ user, pluginItems = [] }: AppSidebarProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const { setOpenMobile, isMobile } = useSidebar();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   const getInitials = (name?: string | null) => {
     if (!name) return "U";
@@ -84,7 +92,7 @@ export function AppSidebar({ user, pluginItems = [] }: AppSidebarProps) {
     <Sidebar className="border-r">
       <SidebarHeader className="p-4">
         <div className="flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2" onClick={handleLinkClick}>
             <div className="p-1.5 bg-primary rounded-md">
               <BookOpen className="h-4 w-4 text-primary-foreground" />
             </div>
@@ -109,7 +117,7 @@ export function AppSidebar({ user, pluginItems = [] }: AppSidebarProps) {
             className="w-full justify-start text-muted-foreground text-sm h-9"
             asChild
           >
-            <Link href="/search">
+            <Link href="/search" onClick={handleLinkClick}>
               <Search className="mr-2 h-4 w-4" />
               Search...
               <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium">
@@ -129,7 +137,7 @@ export function AppSidebar({ user, pluginItems = [] }: AppSidebarProps) {
                     isActive={pathname.startsWith(item.href)}
                     className="h-9"
                   >
-                    <Link href={item.href}>
+                    <Link href={item.href} onClick={handleLinkClick}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
@@ -155,7 +163,7 @@ export function AppSidebar({ user, pluginItems = [] }: AppSidebarProps) {
                       isActive={pathname.startsWith(item.href)}
                       className="h-9"
                     >
-                      <Link href={item.href}>
+                      <Link href={item.href} onClick={handleLinkClick}>
                         <Puzzle className="h-4 w-4" />
                         <span>{item.title}</span>
                       </Link>
@@ -185,7 +193,7 @@ export function AppSidebar({ user, pluginItems = [] }: AppSidebarProps) {
                       isActive={pathname.startsWith(item.href)}
                       className="h-9"
                     >
-                      <Link href={item.href}>
+                      <Link href={item.href} onClick={handleLinkClick}>
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
                       </Link>

@@ -275,18 +275,35 @@ export function PluginsManager({ initialPlugins }: PluginsManagerProps) {
               {plugins.map((plugin) => (
                 <div
                   key={plugin.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
+                  className="p-4 border rounded-lg"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 bg-muted rounded-md">
-                      <Package className="h-5 w-5" />
+                  {/* Mobile layout */}
+                  <div className="flex flex-col gap-3 sm:hidden">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-muted rounded-md shrink-0">
+                        <Package className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <h3 className="font-medium">{plugin.name}</h3>
+                          <Badge variant="secondary" className="text-xs">
+                            v{plugin.version}
+                          </Badge>
+                        </div>
+                        {plugin.description && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {plugin.description}
+                          </p>
+                        )}
+                        {plugin.author && (
+                          <p className="text-xs text-muted-foreground">
+                            by {plugin.author}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div>
+                    <div className="flex items-center justify-between pt-3 border-t">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{plugin.name}</h3>
-                        <Badge variant="secondary" className="text-xs">
-                          v{plugin.version}
-                        </Badge>
                         {plugin.status === "active" ? (
                           <Badge className="text-xs bg-green-100 text-green-800 hover:bg-green-100">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -303,40 +320,90 @@ export function PluginsManager({ initialPlugins }: PluginsManagerProps) {
                           </Badge>
                         )}
                       </div>
-                      {plugin.description && (
-                        <p className="text-sm text-muted-foreground">
-                          {plugin.description}
-                        </p>
-                      )}
-                      {plugin.author && (
-                        <p className="text-xs text-muted-foreground">
-                          by {plugin.author}
-                        </p>
-                      )}
+                      <div className="flex items-center gap-3">
+                        <Switch
+                          checked={plugin.status === "active"}
+                          disabled={
+                            togglingPlugin === plugin.pluginId ||
+                            plugin.status === "error"
+                          }
+                          onCheckedChange={() => handleTogglePlugin(plugin)}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setPluginToDelete(plugin)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        {plugin.status === "active" ? "Enabled" : "Disabled"}
-                      </span>
-                      <Switch
-                        checked={plugin.status === "active"}
-                        disabled={
-                          togglingPlugin === plugin.pluginId ||
-                          plugin.status === "error"
-                        }
-                        onCheckedChange={() => handleTogglePlugin(plugin)}
-                      />
+
+                  {/* Desktop layout */}
+                  <div className="hidden sm:flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-muted rounded-md">
+                        <Package className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">{plugin.name}</h3>
+                          <Badge variant="secondary" className="text-xs">
+                            v{plugin.version}
+                          </Badge>
+                          {plugin.status === "active" ? (
+                            <Badge className="text-xs bg-green-100 text-green-800 hover:bg-green-100">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Active
+                            </Badge>
+                          ) : plugin.status === "error" ? (
+                            <Badge variant="destructive" className="text-xs">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              Error
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs">
+                              Inactive
+                            </Badge>
+                          )}
+                        </div>
+                        {plugin.description && (
+                          <p className="text-sm text-muted-foreground">
+                            {plugin.description}
+                          </p>
+                        )}
+                        {plugin.author && (
+                          <p className="text-xs text-muted-foreground">
+                            by {plugin.author}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => setPluginToDelete(plugin)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                          {plugin.status === "active" ? "Enabled" : "Disabled"}
+                        </span>
+                        <Switch
+                          checked={plugin.status === "active"}
+                          disabled={
+                            togglingPlugin === plugin.pluginId ||
+                            plugin.status === "error"
+                          }
+                          onCheckedChange={() => handleTogglePlugin(plugin)}
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => setPluginToDelete(plugin)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
