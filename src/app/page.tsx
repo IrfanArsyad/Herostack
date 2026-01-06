@@ -8,6 +8,7 @@ import {
   Users,
   Shield,
   ArrowRight,
+  Github,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 
@@ -27,6 +28,14 @@ export default async function HomePage() {
             <span className="font-bold text-xl">HeroStack</span>
           </Link>
           <div className="flex items-center gap-4">
+            <Link
+              href="https://github.com/IrfanArsyad/Herostack"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Github className="h-5 w-5" />
+            </Link>
             {isLoggedIn ? (
               <Button asChild>
                 <Link href="/dashboard">
@@ -183,7 +192,16 @@ export default async function HomePage() {
       {/* Footer */}
       <footer className="border-t py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2024 HeroStack. Open source documentation platform.</p>
+          <p className="mb-2">&copy; 2024 HeroStack. Open source documentation platform.</p>
+          <Link
+            href="https://github.com/IrfanArsyad/Herostack"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+          >
+            <Github className="h-4 w-4" />
+            <span>View on GitHub</span>
+          </Link>
         </div>
       </footer>
     </div>

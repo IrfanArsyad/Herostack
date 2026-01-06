@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ interface ImportBookDialogProps {
 export function ImportBookDialog({ shelves = [], trigger }: ImportBookDialogProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [shelfId, setShelfId] = useState<string>("");
@@ -48,6 +49,10 @@ export function ImportBookDialog({ shelves = [], trigger }: ImportBookDialogProp
       pagesCreated: number;
     };
   } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -131,6 +136,16 @@ export function ImportBookDialog({ shelves = [], trigger }: ImportBookDialogProp
       handleClose();
     }
   };
+
+  // Render placeholder during SSR to prevent hydration mismatch
+  if (!mounted) {
+    return trigger || (
+      <Button variant="outline">
+        <Upload className="h-4 w-4 mr-2" />
+        Import
+      </Button>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => {

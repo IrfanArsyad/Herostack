@@ -35,6 +35,7 @@ import {
   Users,
   Shield,
   Tags,
+  Github,
 } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -80,12 +81,22 @@ export function AppSidebar({ user }: AppSidebarProps) {
   return (
     <Sidebar className="border-r">
       <SidebarHeader className="p-4">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="p-1.5 bg-primary rounded-md">
-            <BookOpen className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="font-semibold">HeroStack</span>
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="p-1.5 bg-primary rounded-md">
+              <BookOpen className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span className="font-semibold">HeroStack</span>
+          </Link>
+          <Link
+            href="https://github.com/IrfanArsyad/Herostack"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Github className="h-4 w-4" />
+          </Link>
+        </div>
       </SidebarHeader>
 
       <SidebarContent className="px-2">

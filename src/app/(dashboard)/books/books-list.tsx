@@ -102,19 +102,21 @@ export function BooksList({ books }: BooksListProps) {
                 <Share2 className="h-3.5 w-3.5" />
               </Button>
 
+              {/* Team badge - bottom right corner */}
+              {book.team && (
+                <Badge variant="outline" className="absolute bottom-2 right-2 text-xs font-normal">
+                  <Users className="h-3 w-3 mr-1" />
+                  {book.team.name}
+                </Badge>
+              )}
+
               <CardContent className="py-3 px-4 flex items-center gap-3 pr-12">
                 <div className="p-2 bg-blue-500/10 rounded">
                   <BookMarked className="h-4 w-4 text-blue-500" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium text-sm truncate flex items-center gap-2">
+                  <div className="font-medium text-sm truncate">
                     {book.name}
-                    {book.team && (
-                      <Badge variant="outline" className="text-xs font-normal shrink-0">
-                        <Users className="h-3 w-3 mr-1" />
-                        {book.team.name}
-                      </Badge>
-                    )}
                   </div>
                   {book.shelf && (
                     <div className="text-xs text-muted-foreground truncate">
