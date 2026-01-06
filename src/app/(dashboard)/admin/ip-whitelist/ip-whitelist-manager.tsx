@@ -153,7 +153,7 @@ export function IPWhitelistManager({ initialSettings }: IPWhitelistManagerProps)
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <p className="font-medium">
                 {settings.enabled ? "Protection Active" : "Protection Disabled"}
@@ -262,14 +262,15 @@ export function IPWhitelistManager({ initialSettings }: IPWhitelistManagerProps)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
-              placeholder="Enter IP address (e.g., 192.168.1.1 or 10.0.0.0/24)"
+              placeholder="Enter IP (e.g., 192.168.1.1)"
               value={newIp}
               onChange={(e) => setNewIp(e.target.value)}
               onKeyPress={handleKeyPress}
+              className="flex-1"
             />
-            <Button onClick={handleAddIP}>
+            <Button onClick={handleAddIP} className="shrink-0">
               <Plus className="h-4 w-4 mr-1" />
               Add
             </Button>

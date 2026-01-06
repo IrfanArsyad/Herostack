@@ -20,14 +20,14 @@ export default async function IPWhitelistPage() {
 
   if (!plugin) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="p-4 sm:p-6 max-w-5xl mx-auto w-full">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">IP Whitelist</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">IP Whitelist</h1>
+          <p className="text-sm text-muted-foreground">
             Restrict access by IP address
           </p>
         </div>
-        <div className="border rounded-lg p-8 text-center">
+        <div className="border rounded-lg p-6 sm:p-8 text-center">
           <p className="text-muted-foreground mb-4">
             IP Whitelist plugin is not installed.
           </p>
@@ -50,10 +50,10 @@ export default async function IPWhitelistPage() {
       };
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">IP Whitelist</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-xl sm:text-2xl font-bold">IP Whitelist</h1>
+        <p className="text-sm text-muted-foreground">
           Restrict access to your application by IP address
         </p>
       </div>
