@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, BookMarked, Clock, ArrowRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { QuickCreateBook, QuickCreatePage } from "@/components/quick-create";
+import { UpdateNotification } from "@/components/update-notification";
 
 async function getRecentContent() {
   // Run queries in parallel for better performance
@@ -31,6 +32,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto w-full">
+      {/* Update Notification (Admin only) */}
+      {session?.user?.role === "admin" && <UpdateNotification />}
+
       {/* Welcome */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold">
