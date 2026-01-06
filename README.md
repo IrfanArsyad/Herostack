@@ -117,6 +117,70 @@ bun run dev
 # Open http://localhost:3056
 ```
 
+### Production with PM2
+
+```bash
+# Install dependencies
+bun install
+
+# Setup environment
+cp .env.example .env
+# Edit .env with your database URL and AUTH_SECRET
+
+# Build application
+bun run build
+
+# Install PM2 globally
+npm install -g pm2
+
+# Start with PM2
+pm2 start bun --name "herostack" -- run start
+
+# Save PM2 process list
+pm2 save
+
+# Auto-start on reboot
+pm2 startup
+```
+
+**PM2 Commands:**
+```bash
+pm2 status          # Check status
+pm2 logs herostack  # View logs
+pm2 restart herostack  # Restart
+pm2 stop herostack  # Stop
+```
+
+### Production with Systemd
+
+Create `/etc/systemd/system/herostack.service`:
+
+```ini
+[Unit]
+Description=HeroStack Documentation Platform
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/herostack
+ExecStart=/usr/local/bin/bun run start
+Restart=on-failure
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+# Enable and start
+sudo systemctl enable herostack
+sudo systemctl start herostack
+
+# Check status
+sudo systemctl status herostack
+```
+
 ## Environment Variables
 
 | Variable | Required | Description |
