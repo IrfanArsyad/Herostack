@@ -48,5 +48,8 @@ next-env.d.ts
 # uploads
 public/uploads/
 
+# plugins (installed at runtime)
+/plugins/
+
 # project tasks
 TASKS.md
