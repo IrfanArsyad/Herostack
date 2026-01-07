@@ -3,8 +3,13 @@ import postgres from "postgres";
 import * as schema from "../src/lib/db/schema";
 import slugify from "slugify";
 
-const connectionString = process.env.DATABASE_URL!;
-const queryClient = postgres(connectionString);
+const queryClient = postgres({
+  host: process.env.DB_HOST || "localhost",
+  port: parseInt(process.env.DB_PORT || "5432"),
+  user: process.env.DB_USER || "herostack",
+  password: process.env.DB_PASSWORD || "herostack123",
+  database: process.env.DB_NAME || "herostack",
+});
 const db = drizzle(queryClient, { schema });
 
 const createSlug = (text: string) =>

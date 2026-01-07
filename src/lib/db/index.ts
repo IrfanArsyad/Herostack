@@ -32,11 +32,15 @@ function createDatabase(): DbType {
     sqlite.pragma("journal_mode = WAL");
     return drizzleSqlite(sqlite, { schema: sqliteSchema }) as DbType;
   } else {
-    const connectionString = process.env.DATABASE_URL!;
-    const queryClient = postgres(connectionString, {
-      max: 10,
-      idle_timeout: 20,
-      connect_timeout: 10,
+    const queryClient = postgres({
+      host: process.env.DB_HOST || "localhost",
+      port: parseInt(process.env.DB_PORT || "5432"),
+      user: process.env.DB_USER || "herostack",
+      password: process.env.DB_PASSWORD || "herostack123",
+      database: process.env.DB_NAME || "herostack",
+      max: parseInt(process.env.DB_MAX_CONNECTIONS || "10"),
+      idle_timeout: parseInt(process.env.DB_IDLE_TIMEOUT || "20"),
+      connect_timeout: parseInt(process.env.DB_CONNECT_TIMEOUT || "10"),
     });
     return drizzlePg(queryClient, { schema: pgSchema });
   }
