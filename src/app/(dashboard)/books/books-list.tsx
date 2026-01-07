@@ -5,10 +5,17 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookMarked, Eye, Pencil, Search, X, BookOpen, Share2, Users, Trash2 } from "lucide-react";
+import { BookMarked, Eye, Pencil, Search, X, BookOpen, Share2, Users, Trash2, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BookReaderModal } from "@/components/book-reader/book-reader-modal";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +25,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { deleteBook } from "@/lib/actions/books";
 
@@ -38,11 +44,21 @@ interface BooksListProps {
 export function BooksList({ books }: BooksListProps) {
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [bookToDelete, setBookToDelete] = useState<Book | null>(null);
 
-  const handleDelete = async (bookId: string) => {
-    setDeletingId(bookId);
-    await deleteBook(bookId);
+  const handleDelete = async () => {
+    if (!bookToDelete) return;
+    setDeletingId(bookToDelete.id);
+    await deleteBook(bookToDelete.id);
     setDeletingId(null);
+    setDeleteDialogOpen(false);
+    setBookToDelete(null);
+  };
+
+  const openDeleteDialog = (book: Book) => {
+    setBookToDelete(book);
+    setDeleteDialogOpen(true);
   };
 
   const filteredBooks = useMemo(() => {
@@ -109,86 +125,9 @@ export function BooksList({ books }: BooksListProps) {
       ) : (
         <div className="grid gap-2 sm:grid-cols-2">
           {filteredBooks.map((book) => (
-            <Card key={book.id} className="hover:bg-muted/50 transition-colors group relative">
+            <Card key={book.id} className="hover:bg-muted/50 transition-colors group">
               <CardContent className="py-3 px-4">
-                {/* Mobile layout */}
-                <div className="flex flex-col gap-2 sm:hidden">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-blue-500/10 rounded shrink-0">
-                      <BookMarked className="h-4 w-4 text-blue-500" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium text-sm line-clamp-2">
-                        {book.name}
-                      </div>
-                      {book.shelf && (
-                        <div className="text-xs text-muted-foreground truncate">
-                          {book.shelf.name}
-                        </div>
-                      )}
-                      {book.team && (
-                        <Badge variant="outline" className="text-xs font-normal mt-1">
-                          <Users className="h-3 w-3 mr-1" />
-                          {book.team.name}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 justify-end border-t pt-2 -mx-4 px-4">
-                    <BookReaderModal
-                      bookSlug={book.slug}
-                      trigger={
-                        <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-                          <BookOpen className="h-3.5 w-3.5 mr-1" />
-                          Read
-                        </Button>
-                      }
-                    />
-                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" asChild>
-                      <Link href={`/books/${book.slug}`}>
-                        <Eye className="h-3.5 w-3.5 mr-1" />
-                        View
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" asChild>
-                      <Link href={`/books/${book.slug}/edit`}>
-                        <Pencil className="h-3.5 w-3.5 mr-1" />
-                        Edit
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleShare(book)}>
-                      <Share2 className="h-3.5 w-3.5" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Book?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete &quot;{book.name}&quot; and all chapters and pages within it.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(book.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            disabled={deletingId === book.id}
-                          >
-                            {deletingId === book.id ? "Deleting..." : "Delete"}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-
-                {/* Desktop layout */}
-                <div className="hidden sm:flex items-center gap-3">
+                <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-500/10 rounded shrink-0">
                     <BookMarked className="h-4 w-4 text-blue-500" />
                   </div>
@@ -196,80 +135,86 @@ export function BooksList({ books }: BooksListProps) {
                     <div className="font-medium text-sm truncate flex items-center gap-2">
                       {book.name}
                       {book.team && (
-                        <Badge variant="outline" className="text-xs font-normal shrink-0">
+                        <Badge variant="outline" className="text-xs font-normal shrink-0 hidden sm:inline-flex">
                           <Users className="h-3 w-3 mr-1" />
                           {book.team.name}
                         </Badge>
                       )}
                     </div>
-                    {book.shelf && (
-                      <div className="text-xs text-muted-foreground truncate">
-                        {book.shelf.name}
-                      </div>
-                    )}
-                    {book.description && !book.shelf && (
-                      <div className="text-xs text-muted-foreground truncate">
-                        {book.description}
-                      </div>
-                    )}
+                    <div className="text-xs text-muted-foreground truncate">
+                      {book.shelf?.name || book.description || "No description"}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <BookReaderModal
-                      bookSlug={book.slug}
-                      trigger={
-                        <Button variant="ghost" size="sm" className="h-7 px-2">
-                          <BookOpen className="h-3.5 w-3.5 mr-1" />
-                          Read
-                        </Button>
-                      }
-                    />
-                    <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                      <Link href={`/books/${book.slug}`}>
-                        <Eye className="h-3.5 w-3.5 mr-1" />
-                        View
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                      <Link href={`/books/${book.slug}/edit`}>
-                        <Pencil className="h-3.5 w-3.5 mr-1" />
-                        Edit
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleShare(book)}>
-                      <Share2 className="h-3.5 w-3.5" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Book?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete &quot;{book.name}&quot; and all chapters and pages within it.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(book.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            disabled={deletingId === book.id}
-                          >
-                            {deletingId === book.id ? "Deleting..." : "Delete"}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <BookReaderModal
+                        bookSlug={book.slug}
+                        trigger={
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <BookOpen className="mr-2 h-4 w-4" />
+                            Read
+                          </DropdownMenuItem>
+                        }
+                      />
+                      <DropdownMenuItem asChild>
+                        <Link href={`/books/${book.slug}`}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          View
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/books/${book.slug}/edit`}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Edit
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare(book)}>
+                        <Share2 className="mr-2 h-4 w-4" />
+                        Copy Link
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => openDeleteDialog(book)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Book?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete &quot;{bookToDelete?.name}&quot; and all chapters and pages within it.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deletingId === bookToDelete?.id}
+            >
+              {deletingId === bookToDelete?.id ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

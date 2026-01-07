@@ -6,8 +6,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FileText, Eye, Pencil, Search, X, Users, Trash2 } from "lucide-react";
+import { FileText, Eye, Pencil, Search, X, Users, Trash2, MoreHorizontal } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +24,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { deletePage } from "@/lib/actions/pages";
 
@@ -38,11 +44,21 @@ interface PagesListProps {
 export function PagesList({ pages }: PagesListProps) {
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [pageToDelete, setPageToDelete] = useState<Page | null>(null);
 
-  const handleDelete = async (pageId: string) => {
-    setDeletingId(pageId);
-    await deletePage(pageId);
+  const handleDelete = async () => {
+    if (!pageToDelete) return;
+    setDeletingId(pageToDelete.id);
+    await deletePage(pageToDelete.id);
     setDeletingId(null);
+    setDeleteDialogOpen(false);
+    setPageToDelete(null);
+  };
+
+  const openDeleteDialog = (page: Page) => {
+    setPageToDelete(page);
+    setDeleteDialogOpen(true);
   };
 
   const filteredPages = useMemo(() => {
@@ -98,163 +114,92 @@ export function PagesList({ pages }: PagesListProps) {
       ) : (
         <div className="grid gap-2">
           {filteredPages.map((page) => (
-            <Card
-              key={page.id}
-              className="hover:bg-muted/50 transition-colors group"
-            >
+            <Card key={page.id} className="hover:bg-muted/50 transition-colors group">
               <CardContent className="py-3 px-4">
-                {/* Mobile layout */}
-                <div className="flex flex-col gap-2 sm:hidden">
-                  <div className="flex items-start gap-3">
-                    <FileText className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1">
-                        <span className="font-medium text-sm">
-                          {page.name}
-                        </span>
-                        {page.draft && (
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                            Draft
-                          </Badge>
-                        )}
-                      </div>
-                      {page.book && (
-                        <div className="text-xs text-muted-foreground truncate">
-                          {page.book.name}
-                        </div>
+                <div className="flex items-center gap-3">
+                  <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm truncate">
+                        {page.name}
+                      </span>
+                      {page.draft && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          Draft
+                        </Badge>
                       )}
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(page.updatedAt), { addSuffix: true })}
-                        </span>
-                        {page.team && (
-                          <Badge variant="outline" className="text-xs font-normal">
-                            <Users className="h-3 w-3 mr-1" />
-                            {page.team.name}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 justify-end border-t pt-2 -mx-4 px-4">
-                    <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
-                      <Link href={`/pages/${page.slug}`}>
-                        <Eye className="h-3.5 w-3.5 mr-1" />
-                        Read
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
-                      <Link href={`/pages/${page.slug}/edit`}>
-                        <Pencil className="h-3.5 w-3.5 mr-1" />
-                        Edit
-                      </Link>
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Page?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete &quot;{page.name}&quot; and all its revisions.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(page.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            disabled={deletingId === page.id}
-                          >
-                            {deletingId === page.id ? "Deleting..." : "Delete"}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-
-                {/* Desktop layout */}
-                <div className="hidden sm:flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm truncate">
-                          {page.name}
-                        </span>
-                        {page.draft && (
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                            Draft
-                          </Badge>
-                        )}
-                        {page.team && (
-                          <Badge variant="outline" className="text-xs font-normal shrink-0">
-                            <Users className="h-3 w-3 mr-1" />
-                            {page.team.name}
-                          </Badge>
-                        )}
-                      </div>
-                      {page.book && (
-                        <div className="text-xs text-muted-foreground truncate">
-                          {page.book.name}
-                        </div>
+                      {page.team && (
+                        <Badge variant="outline" className="text-xs font-normal shrink-0 hidden sm:inline-flex">
+                          <Users className="h-3 w-3 mr-1" />
+                          {page.team.name}
+                        </Badge>
                       )}
                     </div>
+                    <div className="text-xs text-muted-foreground truncate flex items-center gap-2">
+                      {page.book?.name && <span>{page.book.name}</span>}
+                      <span className="hidden sm:inline">•</span>
+                      <span className="hidden sm:inline">
+                        {formatDistanceToNow(new Date(page.updatedAt), { addSuffix: true })}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(page.updatedAt), { addSuffix: true })}
-                    </span>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
                         <Link href={`/pages/${page.slug}`}>
-                          <Eye className="h-3.5 w-3.5 mr-1" />
+                          <Eye className="mr-2 h-4 w-4" />
                           Read
                         </Link>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
                         <Link href={`/pages/${page.slug}/edit`}>
-                          <Pencil className="h-3.5 w-3.5 mr-1" />
+                          <Pencil className="mr-2 h-4 w-4" />
                           Edit
                         </Link>
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Page?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete &quot;{page.name}&quot; and all its revisions.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(page.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              disabled={deletingId === page.id}
-                            >
-                              {deletingId === page.id ? "Deleting..." : "Delete"}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => openDeleteDialog(page)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Page?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete &quot;{pageToDelete?.name}&quot; and all its revisions.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deletingId === pageToDelete?.id}
+            >
+              {deletingId === pageToDelete?.id ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
