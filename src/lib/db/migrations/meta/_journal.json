@@ -15,6 +15,13 @@
       "when": 1767698448798,
       "tag": "0001_large_spirit",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767808197925,
+      "tag": "0002_opposite_stick",
+      "breakpoints": true
     }
   ]
 }

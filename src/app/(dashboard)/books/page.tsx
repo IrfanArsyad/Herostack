@@ -20,6 +20,9 @@ async function getBooks(userId: string, userRole?: string) {
         team: {
           columns: { id: true, name: true, slug: true },
         },
+        createdByUser: {
+          columns: { id: true, name: true, image: true },
+        },
       },
     });
   }
@@ -112,9 +115,16 @@ export default async function BooksPage() {
             name: book.name,
             slug: book.slug,
             description: book.description,
+            isPublic: book.isPublic,
             shelf: book.shelf ? { name: book.shelf.name } : null,
             team: book.team ? { name: book.team.name } : null,
+            createdBy: "createdByUser" in book && book.createdByUser ? {
+              name: (book.createdByUser as { name: string | null }).name,
+              image: (book.createdByUser as { image: string | null }).image,
+            } : null,
+            createdAt: book.createdAt,
           }))}
+          isSuperAdmin={isSuperAdmin(session.user.role)}
         />
       )}
     </div>

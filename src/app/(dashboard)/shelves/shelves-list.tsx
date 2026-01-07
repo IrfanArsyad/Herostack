@@ -3,9 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { Library, BookMarked, Eye, Pencil, Users, Trash2, MoreHorizontal } from "lucide-react";
+import { Library, BookMarked, Eye, Pencil, Users, Trash2, MoreHorizontal, Globe, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,20 +29,25 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { deleteShelf } from "@/lib/actions/shelves";
+import { format } from "date-fns";
 
 interface Shelf {
   id: string;
   name: string;
   slug: string;
   booksCount: number;
+  isPublic?: boolean;
   team?: { name: string } | null;
+  createdBy?: { name: string | null; image: string | null } | null;
+  createdAt?: Date;
 }
 
 interface ShelvesListProps {
   shelves: Shelf[];
+  isSuperAdmin?: boolean;
 }
 
-export function ShelvesList({ shelves }: ShelvesListProps) {
+export function ShelvesList({ shelves, isSuperAdmin }: ShelvesListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [shelfToDelete, setShelfToDelete] = useState<Shelf | null>(null);
@@ -69,6 +79,12 @@ export function ShelvesList({ shelves }: ShelvesListProps) {
                 <div className="min-w-0 flex-1">
                   <div className="font-medium text-sm truncate flex items-center gap-2">
                     {shelf.name}
+                    {shelf.isPublic && (
+                      <Badge variant="secondary" className="text-xs font-normal shrink-0 hidden sm:inline-flex bg-green-500/10 text-green-600 border-green-500/20">
+                        <Globe className="h-3 w-3" />
+                        Public
+                      </Badge>
+                    )}
                     {shelf.team && (
                       <Badge variant="outline" className="text-xs font-normal shrink-0 hidden sm:inline-flex">
                         <Users className="h-3 w-3 mr-1" />
@@ -81,6 +97,23 @@ export function ShelvesList({ shelves }: ShelvesListProps) {
                     {shelf.booksCount} book{shelf.booksCount !== 1 ? "s" : ""}
                   </div>
                 </div>
+                {isSuperAdmin && shelf.createdBy && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="p-1.5 rounded-full bg-muted hover:bg-muted/80 cursor-help shrink-0">
+                        <UserCircle className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="text-xs">
+                      <div className="font-medium">{shelf.createdBy.name || "Unknown"}</div>
+                      {shelf.createdAt && (
+                        <div className="text-muted-foreground">
+                          {format(new Date(shelf.createdAt), "MMM d, yyyy")}
+                        </div>
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">

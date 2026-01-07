@@ -139,6 +139,9 @@ export const shelves = pgTable("shelves", {
   description: text("description"),
   coverImage: text("cover_image"),
   sortOrder: integer("sort_order").default(0).notNull(),
+  // Public sharing fields
+  isPublic: boolean("is_public").default(false).notNull(),
+  shareToken: text("share_token").unique(),
   teamId: text("team_id").references(() => teams.id, {
     onDelete: "set null",
   }),
@@ -161,6 +164,9 @@ export const books = pgTable("books", {
   description: text("description"),
   coverImage: text("cover_image"),
   sortOrder: integer("sort_order").default(0).notNull(),
+  // Public sharing fields
+  isPublic: boolean("is_public").default(false).notNull(),
+  shareToken: text("share_token").unique(),
   teamId: text("team_id").references(() => teams.id, {
     onDelete: "set null",
   }),

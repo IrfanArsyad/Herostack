@@ -5,8 +5,13 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookMarked, Eye, Pencil, Search, X, BookOpen, Share2, Users, Trash2, MoreHorizontal } from "lucide-react";
+import { BookMarked, Eye, Pencil, Search, X, BookOpen, Share2, Users, Trash2, MoreHorizontal, Globe, UserCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { BookReaderModal } from "@/components/book-reader/book-reader-modal";
 import { toast } from "sonner";
 import {
@@ -27,21 +32,26 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { deleteBook } from "@/lib/actions/books";
+import { format } from "date-fns";
 
 interface Book {
   id: string;
   name: string;
   slug: string;
   description: string | null;
+  isPublic?: boolean;
   shelf: { name: string } | null;
   team?: { name: string } | null;
+  createdBy?: { name: string | null; image: string | null } | null;
+  createdAt?: Date;
 }
 
 interface BooksListProps {
   books: Book[];
+  isSuperAdmin?: boolean;
 }
 
-export function BooksList({ books }: BooksListProps) {
+export function BooksList({ books, isSuperAdmin }: BooksListProps) {
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -134,6 +144,12 @@ export function BooksList({ books }: BooksListProps) {
                   <div className="min-w-0 flex-1">
                     <div className="font-medium text-sm truncate flex items-center gap-2">
                       {book.name}
+                      {book.isPublic && (
+                        <Badge variant="secondary" className="text-xs font-normal shrink-0 hidden sm:inline-flex bg-green-500/10 text-green-600 border-green-500/20">
+                          <Globe className="h-3 w-3" />
+                          Public
+                        </Badge>
+                      )}
                       {book.team && (
                         <Badge variant="outline" className="text-xs font-normal shrink-0 hidden sm:inline-flex">
                           <Users className="h-3 w-3 mr-1" />
@@ -145,6 +161,23 @@ export function BooksList({ books }: BooksListProps) {
                       {book.shelf?.name || book.description || "No description"}
                     </div>
                   </div>
+                  {isSuperAdmin && book.createdBy && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="p-1.5 rounded-full bg-muted hover:bg-muted/80 cursor-help shrink-0">
+                          <UserCircle className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="text-xs">
+                        <div className="font-medium">{book.createdBy.name || "Unknown"}</div>
+                        {book.createdAt && (
+                          <div className="text-muted-foreground">
+                            {format(new Date(book.createdAt), "MMM d, yyyy")}
+                          </div>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">

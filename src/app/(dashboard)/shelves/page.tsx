@@ -19,6 +19,9 @@ async function getShelves(userId: string, userRole?: string) {
         team: {
           columns: { id: true, name: true, slug: true },
         },
+        createdByUser: {
+          columns: { id: true, name: true, image: true },
+        },
       },
     });
   }
@@ -76,8 +79,15 @@ export default async function ShelvesPage() {
             name: shelf.name,
             slug: shelf.slug,
             booksCount: shelf.books.length,
+            isPublic: shelf.isPublic,
             team: shelf.team ? { name: shelf.team.name } : null,
+            createdBy: "createdByUser" in shelf && shelf.createdByUser ? {
+              name: (shelf.createdByUser as { name: string | null }).name,
+              image: (shelf.createdByUser as { image: string | null }).image,
+            } : null,
+            createdAt: shelf.createdAt,
           }))}
+          isSuperAdmin={isSuperAdmin(session.user.role)}
         />
       )}
     </div>

@@ -4,7 +4,7 @@ import { db, books } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { getUserTeamIds } from "@/lib/permissions";
-import { isAdmin } from "@/lib/rbac";
+import { isAdmin, isSuperAdmin } from "@/lib/rbac";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,7 +43,7 @@ interface BookPageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function getBook(slug: string) {
+async function getBook(slug: string, includeCreator: boolean = false) {
   return db.query.books.findFirst({
     where: eq(books.slug, slug),
     with: {
@@ -53,11 +53,22 @@ async function getBook(slug: string) {
       },
       chapters: {
         with: {
-          pages: true,
+          pages: {
+            with: includeCreator ? {
+              createdByUser: {
+                columns: { id: true, name: true, image: true },
+              },
+            } : undefined,
+          },
         },
         orderBy: (chapters, { asc }) => [asc(chapters.sortOrder)],
       },
       pages: {
+        with: includeCreator ? {
+          createdByUser: {
+            columns: { id: true, name: true, image: true },
+          },
+        } : undefined,
         orderBy: (pages, { asc }) => [asc(pages.sortOrder)],
       },
     },
@@ -71,7 +82,8 @@ export default async function BookPage({ params }: BookPageProps) {
   }
 
   const { slug } = await params;
-  const book = await getBook(slug);
+  const userIsSuperAdmin = isSuperAdmin(session.user.role);
+  const book = await getBook(slug, userIsSuperAdmin);
 
   if (!book) {
     notFound();
@@ -192,6 +204,7 @@ export default async function BookPage({ params }: BookPageProps) {
               bookId={book.id}
               chapters={book.chapters}
               directPages={directPages}
+              isSuperAdmin={userIsSuperAdmin}
             />
           )}
 
