@@ -5,10 +5,22 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookMarked, Eye, Pencil, Search, X, BookOpen, Share2, Users } from "lucide-react";
+import { BookMarked, Eye, Pencil, Search, X, BookOpen, Share2, Users, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BookReaderModal } from "@/components/book-reader/book-reader-modal";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { deleteBook } from "@/lib/actions/books";
 
 interface Book {
   id: string;
@@ -25,6 +37,13 @@ interface BooksListProps {
 
 export function BooksList({ books }: BooksListProps) {
   const [search, setSearch] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (bookId: string) => {
+    setDeletingId(bookId);
+    await deleteBook(bookId);
+    setDeletingId(null);
+  };
 
   const filteredBooks = useMemo(() => {
     if (!search.trim()) return books;
@@ -140,6 +159,31 @@ export function BooksList({ books }: BooksListProps) {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleShare(book)}>
                       <Share2 className="h-3.5 w-3.5" />
                     </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Book?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete &quot;{book.name}&quot; and all chapters and pages within it.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(book.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={deletingId === book.id}
+                          >
+                            {deletingId === book.id ? "Deleting..." : "Delete"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
 
@@ -194,6 +238,31 @@ export function BooksList({ books }: BooksListProps) {
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleShare(book)}>
                       <Share2 className="h-3.5 w-3.5" />
                     </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Book?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete &quot;{book.name}&quot; and all chapters and pages within it.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(book.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={deletingId === book.id}
+                          >
+                            {deletingId === book.id ? "Deleting..." : "Delete"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </CardContent>

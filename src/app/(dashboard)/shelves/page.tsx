@@ -1,14 +1,12 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { db, shelves } from "@/lib/db";
 import { desc, eq, or, inArray, isNull, and } from "drizzle-orm";
 import { Card, CardContent } from "@/components/ui/card";
-import { Library, BookMarked, Eye, Pencil, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Library } from "lucide-react";
 import { QuickCreateShelf } from "@/components/quick-create";
 import { auth } from "@/lib/auth";
 import { getUserTeamIds } from "@/lib/permissions";
+import { ShelvesList } from "./shelves-list";
 
 async function getShelves(userId: string) {
   const teamIds = await getUserTeamIds(userId);
@@ -58,49 +56,15 @@ export default async function ShelvesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-2 sm:grid-cols-2">
-          {allShelves.map((shelf) => (
-            <Card
-              key={shelf.id}
-              className="hover:bg-muted/50 transition-colors group"
-            >
-              <CardContent className="py-3 px-4 flex items-center gap-3">
-                <div className="p-2 bg-purple-500/10 rounded">
-                  <Library className="h-4 w-4 text-purple-500" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="font-medium text-sm truncate flex items-center gap-2">
-                    {shelf.name}
-                    {shelf.team && (
-                      <Badge variant="outline" className="text-xs font-normal">
-                        <Users className="h-3 w-3 mr-1" />
-                        {shelf.team.name}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1">
-                    <BookMarked className="h-3 w-3" />
-                    {shelf.books.length} book{shelf.books.length !== 1 ? "s" : ""}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                    <Link href={`/shelves/${shelf.slug}`}>
-                      <Eye className="h-3.5 w-3.5 mr-1" />
-                      View
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                    <Link href={`/shelves/${shelf.slug}/edit`}>
-                      <Pencil className="h-3.5 w-3.5 mr-1" />
-                      Edit
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <ShelvesList
+          shelves={allShelves.map((shelf) => ({
+            id: shelf.id,
+            name: shelf.name,
+            slug: shelf.slug,
+            booksCount: shelf.books.length,
+            team: shelf.team ? { name: shelf.team.name } : null,
+          }))}
+        />
       )}
     </div>
   );

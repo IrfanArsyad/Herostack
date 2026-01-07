@@ -6,8 +6,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FileText, Eye, Pencil, Search, X, Users } from "lucide-react";
+import { FileText, Eye, Pencil, Search, X, Users, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { deletePage } from "@/lib/actions/pages";
 
 interface Page {
   id: string;
@@ -25,6 +37,13 @@ interface PagesListProps {
 
 export function PagesList({ pages }: PagesListProps) {
   const [search, setSearch] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (pageId: string) => {
+    setDeletingId(pageId);
+    await deletePage(pageId);
+    setDeletingId(null);
+  };
 
   const filteredPages = useMemo(() => {
     if (!search.trim()) return pages;
@@ -130,6 +149,31 @@ export function PagesList({ pages }: PagesListProps) {
                         Edit
                       </Link>
                     </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Page?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete &quot;{page.name}&quot; and all its revisions.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(page.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={deletingId === page.id}
+                          >
+                            {deletingId === page.id ? "Deleting..." : "Delete"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
 
@@ -178,6 +222,31 @@ export function PagesList({ pages }: PagesListProps) {
                           Edit
                         </Link>
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Page?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete &quot;{page.name}&quot; and all its revisions.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(page.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              disabled={deletingId === page.id}
+                            >
+                              {deletingId === page.id ? "Deleting..." : "Delete"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </div>
