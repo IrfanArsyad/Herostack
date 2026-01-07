@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -210,7 +211,7 @@ export function UsersTable({
                 </div>
                 <div className="flex items-center justify-between gap-2 pt-2 border-t">
                   <div className="text-xs text-muted-foreground">
-                    Joined {new Date(user.createdAt).toLocaleDateString()}
+                    Joined {format(new Date(user.createdAt), "MMM d, yyyy")}
                   </div>
                   {user.id === currentUserId ? (
                     <Badge className={roleColors[user.role]}>
@@ -341,7 +342,7 @@ export function UsersTable({
                         )}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {new Date(user.createdAt).toLocaleDateString()}
+                        {format(new Date(user.createdAt), "MMM d, yyyy")}
                       </td>
                       <td className="px-4 py-3 text-right">
                         {user.id !== currentUserId && (
