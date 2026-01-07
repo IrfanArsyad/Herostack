@@ -1,11 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { db } from "@/lib/db";
+import { db, isDatabaseSqlite } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-import { eq, desc, asc, ilike, or, count } from "drizzle-orm";
+import { eq, desc, asc, ilike, like, or, count, sql } from "drizzle-orm";
 import { requireAdmin } from "@/lib/rbac";
 import type { UserRole } from "@/lib/rbac";
+
+// Helper for case-insensitive search (SQLite LIKE is case-insensitive, PostgreSQL needs ILIKE)
+function caseInsensitiveLike(column: typeof users.name | typeof users.email, value: string) {
+  if (isDatabaseSqlite) {
+    return like(column, value);
+  }
+  return ilike(column, value);
+}
 
 export async function getUsers(options?: {
   page?: number;
@@ -38,8 +46,8 @@ export async function getUsers(options?: {
 
     const whereClause = search
       ? or(
-          ilike(users.name, `%${search}%`),
-          ilike(users.email, `%${search}%`)
+          caseInsensitiveLike(users.name, `%${search}%`),
+          caseInsensitiveLike(users.email, `%${search}%`)
         )
       : undefined;
 

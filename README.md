@@ -68,7 +68,7 @@
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router, Turbopack)
-- **Database**: PostgreSQL + Drizzle ORM
+- **Database**: PostgreSQL or SQLite + Drizzle ORM
 - **Auth**: Auth.js v5
 - **UI**: shadcn/ui + Tailwind CSS
 - **Editor**: TipTap
@@ -107,7 +107,7 @@ docker compose up -d
 # Open http://localhost:3056
 ```
 
-### Local Development
+### Local Development (PostgreSQL)
 
 ```bash
 # Install Bun (if not installed)
@@ -128,6 +128,38 @@ bun run dev
 
 # Open http://localhost:3056
 ```
+
+### Local Development (SQLite)
+
+SQLite is a simpler alternative that doesn't require a separate database server.
+
+```bash
+# Install Bun (if not installed)
+curl -fsSL https://bun.sh/install | bash
+
+# Install dependencies
+bun install
+
+# Setup environment
+cp .env.example .env
+
+# Edit .env to use SQLite
+# DATABASE_TYPE="sqlite"
+# DATABASE_PATH="./data/herostack.db"
+
+# Create data directory
+mkdir -p data
+
+# Push database schema (SQLite)
+bunx drizzle-kit push --config drizzle.config.sqlite.ts
+
+# Start dev server
+bun run dev
+
+# Open http://localhost:3056
+```
+
+> **Note:** SQLite doesn't support full-text search. Search functionality will use basic LIKE queries instead.
 
 ### Production with PM2
 
@@ -197,7 +229,9 @@ sudo systemctl status herostack
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `DATABASE_TYPE` | No | Database type: `postgresql` (default) or `sqlite` |
+| `DATABASE_URL` | Yes* | PostgreSQL connection string (*required for PostgreSQL) |
+| `DATABASE_PATH` | No | SQLite file path (default: `./data/herostack.db`) |
 | `AUTH_SECRET` | Yes | Random string for session encryption |
 | `AUTH_URL` | Yes | Your app URL |
 | `AUTH_GOOGLE_ID` | No | Google OAuth Client ID |
@@ -256,11 +290,15 @@ bun run build
 # Production
 bun run start
 
-# Database
+# Database (PostgreSQL)
 bun run db:push       # Push schema to database
 bun run db:generate   # Generate migrations
 bun run db:studio     # Open Drizzle Studio
 bun run db:seed       # Seed sample content (tutorial)
+
+# Database (SQLite)
+bunx drizzle-kit push --config drizzle.config.sqlite.ts
+bunx drizzle-kit studio --config drizzle.config.sqlite.ts
 ```
 
 ## Plugins

@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, isDatabaseSqlite } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-import { eq, desc, asc, ilike, or, count } from "drizzle-orm";
+import { eq, desc, asc, ilike, like, or, count } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { isAdmin } from "@/lib/rbac";
+
+// Helper for case-insensitive search
+function caseInsensitiveLike(column: typeof users.name | typeof users.email, value: string) {
+  if (isDatabaseSqlite) {
+    return like(column, value);
+  }
+  return ilike(column, value);
+}
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -35,8 +43,8 @@ export async function GET(request: NextRequest) {
 
     const whereClause = search
       ? or(
-          ilike(users.name, `%${search}%`),
-          ilike(users.email, `%${search}%`)
+          caseInsensitiveLike(users.name, `%${search}%`),
+          caseInsensitiveLike(users.email, `%${search}%`)
         )
       : undefined;
 
