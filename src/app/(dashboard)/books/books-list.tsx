@@ -193,8 +193,14 @@ export function BooksList({ books }: BooksListProps) {
                     <BookMarked className="h-4 w-4 text-blue-500" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium text-sm truncate">
+                    <div className="font-medium text-sm truncate flex items-center gap-2">
                       {book.name}
+                      {book.team && (
+                        <Badge variant="outline" className="text-xs font-normal shrink-0">
+                          <Users className="h-3 w-3 mr-1" />
+                          {book.team.name}
+                        </Badge>
+                      )}
                     </div>
                     {book.shelf && (
                       <div className="text-xs text-muted-foreground truncate">
@@ -207,12 +213,6 @@ export function BooksList({ books }: BooksListProps) {
                       </div>
                     )}
                   </div>
-                  {book.team && (
-                    <Badge variant="outline" className="text-xs font-normal shrink-0">
-                      <Users className="h-3 w-3 mr-1" />
-                      {book.team.name}
-                    </Badge>
-                  )}
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                     <BookReaderModal
                       bookSlug={book.slug}
