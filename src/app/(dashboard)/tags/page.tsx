@@ -2,8 +2,8 @@ import { db, tags, taggables } from "@/lib/db";
 import { desc, eq, sql } from "drizzle-orm";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tags, Hash, Library, BookMarked, FileText, Layers } from "lucide-react";
-import Link from "next/link";
+import { Tags } from "lucide-react";
+import { TagsList } from "./tags-list";
 
 async function getTagsWithCounts() {
   const allTags = await db.query.tags.findMany({
@@ -64,55 +64,15 @@ export default async function TagsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {allTags.map((tag) => (
-              <Link key={tag.id} href={`/tags/${tag.slug}`}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-md bg-primary/10">
-                        <Hash className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">{tag.name}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {tag.total} {tag.total === 1 ? "item" : "items"}
-                        </p>
-                        {tag.total > 0 && (
-                          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                            {tag.counts.shelf && (
-                              <span className="flex items-center gap-1">
-                                <Library className="h-3 w-3" />
-                                {tag.counts.shelf}
-                              </span>
-                            )}
-                            {tag.counts.book && (
-                              <span className="flex items-center gap-1">
-                                <BookMarked className="h-3 w-3" />
-                                {tag.counts.book}
-                              </span>
-                            )}
-                            {tag.counts.chapter && (
-                              <span className="flex items-center gap-1">
-                                <Layers className="h-3 w-3" />
-                                {tag.counts.chapter}
-                              </span>
-                            )}
-                            {tag.counts.page && (
-                              <span className="flex items-center gap-1">
-                                <FileText className="h-3 w-3" />
-                                {tag.counts.page}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+          <TagsList
+            tags={allTags.map((tag) => ({
+              id: tag.id,
+              name: tag.name,
+              slug: tag.slug,
+              total: tag.total,
+              counts: tag.counts,
+            }))}
+          />
         )}
       </div>
     </>
