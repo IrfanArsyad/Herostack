@@ -4,9 +4,15 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Library, BookMarked, Layers, FileText, Hash, Eye, Pencil } from "lucide-react";
+import { Library, BookMarked, Layers, FileText, Hash, Eye, Pencil, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { DeleteTagButton } from "./delete-button";
 
 interface TaggedItem {
   id: string;
@@ -162,16 +168,28 @@ export default async function TagDetailPage({
         ]}
       />
       <div className="p-6 space-y-6 max-w-5xl mx-auto w-full">
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-lg bg-primary/10">
-            <Hash className="h-6 w-6 text-primary" />
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <Hash className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold">{tag.name}</h1>
+              <p className="text-muted-foreground mt-1">
+                {items.length} {items.length === 1 ? "item" : "items"} with this tag
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold">{tag.name}</h1>
-            <p className="text-muted-foreground mt-1">
-              {items.length} {items.length === 1 ? "item" : "items"} with this tag
-            </p>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DeleteTagButton tagId={tag.id} />
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {items.length === 0 ? (
