@@ -205,7 +205,9 @@ print_complete_docker() {
     echo "  Restart:        $COMPOSE_CMD restart"
     echo "  Update:         git pull && $COMPOSE_CMD up -d --build"
     echo ""
-    echo -e "${YELLOW}First user registered will be admin!${NC}"
+    echo -e "${CYAN}Default Login:${NC}"
+    echo "  Email:    superadmin@studiolab.id"
+    echo "  Password: superadmin123"
     echo ""
 }
 
@@ -275,6 +277,14 @@ install_manual() {
         echo "  sudo -u postgres psql -c \"GRANT ALL PRIVILEGES ON DATABASE herostack TO herostack;\""
         echo ""
         exit 1
+    fi
+
+    # Create default superadmin
+    print_info "Creating default superadmin user..."
+    if bun run db:superadmin; then
+        print_status "Superadmin user created"
+    else
+        print_warning "Could not create superadmin (may already exist)"
     fi
 
     # Build
@@ -397,7 +407,9 @@ print_complete_manual() {
     echo ""
     echo "Open your browser at: ${AUTH_URL:-http://localhost:3056}"
     echo ""
-    echo -e "${YELLOW}First user registered will be admin!${NC}"
+    echo -e "${CYAN}Default Login:${NC}"
+    echo "  Email:    superadmin@studiolab.id"
+    echo "  Password: superadmin123"
     echo ""
 }
 

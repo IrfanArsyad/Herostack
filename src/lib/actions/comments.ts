@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { comments, users, pages } from "@/lib/db/schema";
 import { eq, desc, isNull, asc } from "drizzle-orm";
-import { requireAuth } from "@/lib/rbac";
+import { requireAuth, isAdmin } from "@/lib/rbac";
 
 export async function getComments(pageId: string) {
   const allComments = await db.query.comments.findMany({
@@ -139,9 +139,9 @@ export async function deleteComment(commentId: string) {
   }
 
   const isOwner = existingComment.userId === session.user.id;
-  const isAdmin = session.user.role === "admin";
+  const hasAdminAccess = isAdmin(session.user.role);
 
-  if (!isOwner && !isAdmin) {
+  if (!isOwner && !hasAdminAccess) {
     return { error: "You can only delete your own comments" };
   }
 

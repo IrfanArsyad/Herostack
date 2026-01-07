@@ -35,14 +35,14 @@ import {
 } from "@/components/ui/card";
 import { updateUserRole, deleteUser } from "@/lib/actions/users";
 import type { UserRole } from "@/lib/rbac";
-import { Search, Trash2, ChevronLeft, ChevronRight, Shield, Pencil, Eye } from "lucide-react";
+import { Search, Trash2, ChevronLeft, ChevronRight, Shield, Pencil, Eye, Crown } from "lucide-react";
 
 interface User {
   id: string;
   name: string | null;
   email: string | null;
   image: string | null;
-  role: "admin" | "editor" | "viewer";
+  role: "superadmin" | "admin" | "editor" | "viewer";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -53,16 +53,19 @@ interface UsersTableProps {
   page: number;
   totalPages: number;
   currentUserId: string;
+  currentUserRole: string;
   initialSearch: string;
 }
 
 const roleColors: Record<UserRole, string> = {
+  superadmin: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
   admin: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
   editor: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
   viewer: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
 };
 
 const roleIcons: Record<UserRole, React.ReactNode> = {
+  superadmin: <Crown className="h-3 w-3" />,
   admin: <Shield className="h-3 w-3" />,
   editor: <Pencil className="h-3 w-3" />,
   viewer: <Eye className="h-3 w-3" />,
@@ -74,11 +77,14 @@ export function UsersTable({
   page,
   totalPages,
   currentUserId,
+  currentUserRole,
   initialSearch,
 }: UsersTableProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [search, setSearch] = useState(initialSearch);
+
+  const isSuperAdmin = currentUserRole === "superadmin";
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,6 +123,24 @@ export function UsersTable({
         router.refresh();
       }
     });
+  };
+
+  // Check if user can be edited (superadmin cannot be edited by anyone except themselves if they are superadmin)
+  const canEditUser = (user: User) => {
+    // Cannot edit yourself
+    if (user.id === currentUserId) return false;
+    // Superadmin users cannot be edited by anyone
+    if (user.role === "superadmin") return false;
+    return true;
+  };
+
+  // Check if user can be deleted
+  const canDeleteUser = (user: User) => {
+    // Cannot delete yourself
+    if (user.id === currentUserId) return false;
+    // Superadmin users cannot be deleted
+    if (user.role === "superadmin") return false;
+    return true;
   };
 
   return (
@@ -175,7 +199,7 @@ export function UsersTable({
                       </div>
                     </div>
                   </div>
-                  {user.id !== currentUserId && (
+                  {canDeleteUser(user) && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -213,14 +237,7 @@ export function UsersTable({
                   <div className="text-xs text-muted-foreground">
                     Joined {format(new Date(user.createdAt), "MMM d, yyyy")}
                   </div>
-                  {user.id === currentUserId ? (
-                    <Badge className={roleColors[user.role]}>
-                      <span className="flex items-center gap-1">
-                        {roleIcons[user.role]}
-                        {user.role}
-                      </span>
-                    </Badge>
-                  ) : (
+                  {canEditUser(user) ? (
                     <Select
                       value={user.role}
                       onValueChange={(value) =>
@@ -228,10 +245,17 @@ export function UsersTable({
                       }
                       disabled={isPending}
                     >
-                      <SelectTrigger className="w-[110px] h-8 text-xs">
+                      <SelectTrigger className="w-[130px] h-8 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        {isSuperAdmin && (
+                          <SelectItem value="superadmin">
+                            <span className="flex items-center gap-2">
+                              <Crown className="h-3 w-3" /> Super Admin
+                            </span>
+                          </SelectItem>
+                        )}
                         <SelectItem value="admin">
                           <span className="flex items-center gap-2">
                             <Shield className="h-3 w-3" /> Admin
@@ -249,6 +273,13 @@ export function UsersTable({
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                  ) : (
+                    <Badge className={roleColors[user.role]}>
+                      <span className="flex items-center gap-1">
+                        {roleIcons[user.role]}
+                        {user.role === "superadmin" ? "Super Admin" : user.role}
+                      </span>
+                    </Badge>
                   )}
                 </div>
               </div>
@@ -303,14 +334,7 @@ export function UsersTable({
                         {user.email}
                       </td>
                       <td className="px-4 py-3">
-                        {user.id === currentUserId ? (
-                          <Badge className={roleColors[user.role]}>
-                            <span className="flex items-center gap-1">
-                              {roleIcons[user.role]}
-                              {user.role}
-                            </span>
-                          </Badge>
-                        ) : (
+                        {canEditUser(user) ? (
                           <Select
                             value={user.role}
                             onValueChange={(value) =>
@@ -318,10 +342,17 @@ export function UsersTable({
                             }
                             disabled={isPending}
                           >
-                            <SelectTrigger className="w-[120px]">
+                            <SelectTrigger className="w-[140px]">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
+                              {isSuperAdmin && (
+                                <SelectItem value="superadmin">
+                                  <span className="flex items-center gap-2">
+                                    <Crown className="h-3 w-3" /> Super Admin
+                                  </span>
+                                </SelectItem>
+                              )}
                               <SelectItem value="admin">
                                 <span className="flex items-center gap-2">
                                   <Shield className="h-3 w-3" /> Admin
@@ -339,13 +370,20 @@ export function UsersTable({
                               </SelectItem>
                             </SelectContent>
                           </Select>
+                        ) : (
+                          <Badge className={roleColors[user.role]}>
+                            <span className="flex items-center gap-1">
+                              {roleIcons[user.role]}
+                              {user.role === "superadmin" ? "Super Admin" : user.role}
+                            </span>
+                          </Badge>
                         )}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {format(new Date(user.createdAt), "MMM d, yyyy")}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        {user.id !== currentUserId && (
+                        {canDeleteUser(user) && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button

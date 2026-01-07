@@ -44,7 +44,7 @@ interface Member {
     name: string | null;
     email: string | null;
     image: string | null;
-    role: "admin" | "editor" | "viewer";
+    role: "superadmin" | "admin" | "editor" | "viewer";
   };
 }
 

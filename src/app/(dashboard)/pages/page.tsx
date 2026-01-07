@@ -7,8 +7,23 @@ import { QuickCreatePage } from "@/components/quick-create";
 import { PagesList } from "./pages-list";
 import { auth } from "@/lib/auth";
 import { getUserTeamIds } from "@/lib/permissions";
+import { isSuperAdmin } from "@/lib/rbac";
 
-async function getPages(userId: string) {
+async function getPages(userId: string, userRole?: string) {
+  // Superadmin can see all pages
+  if (isSuperAdmin(userRole)) {
+    return db.query.pages.findMany({
+      orderBy: [desc(pages.updatedAt)],
+      with: {
+        book: {
+          with: {
+            team: { columns: { id: true, name: true } },
+          },
+        },
+      },
+    });
+  }
+
   const teamIds = await getUserTeamIds(userId);
 
   // First get accessible book IDs
@@ -65,7 +80,7 @@ export default async function PagesPage() {
     redirect("/login");
   }
 
-  const allPages = await getPages(session.user.id);
+  const allPages = await getPages(session.user.id, session.user.role);
 
   return (
     <div className="p-4 sm:p-6 max-w-5xl mx-auto w-full">

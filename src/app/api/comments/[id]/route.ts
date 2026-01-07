@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { comments } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { isAdmin } from "@/lib/rbac";
 
 export async function PATCH(
   request: NextRequest,
@@ -79,9 +80,9 @@ export async function DELETE(
     }
 
     const isOwner = existingComment.userId === session.user.id;
-    const isAdmin = session.user.role === "admin";
+    const hasAdminAccess = isAdmin(session.user.role);
 
-    if (!isOwner && !isAdmin) {
+    if (!isOwner && !hasAdminAccess) {
       return NextResponse.json(
         { error: "You can only delete your own comments" },
         { status: 403 }

@@ -45,6 +45,7 @@
 - **Comments System** - Threaded comments on pages
 - **Public Sharing** - Generate read-only links for external sharing
 - **Role-Based Access Control (RBAC)**
+  - **Super Admin** - Full access to ALL data + cannot be edited/deleted
   - **Admin** - Full access + user management
   - **Editor** - Create, edit, view content
   - **Viewer** - Read-only access
@@ -105,6 +106,17 @@ openssl rand -base64 32
 docker compose up -d
 
 # Open http://localhost:3056
+```
+
+**Create default superadmin (first time only):**
+```bash
+docker compose exec app bun run db:superadmin
+```
+
+**Default Login:**
+```
+Email: superadmin@studiolab.id
+Password: superadmin123
 ```
 
 ### Local Development (PostgreSQL)
@@ -295,6 +307,7 @@ bun run db:push       # Push schema to database
 bun run db:generate   # Generate migrations
 bun run db:studio     # Open Drizzle Studio
 bun run db:seed       # Seed sample content (tutorial)
+bun run db:superadmin # Create default superadmin user
 
 # Database (SQLite)
 bunx drizzle-kit push --config drizzle.config.sqlite.ts

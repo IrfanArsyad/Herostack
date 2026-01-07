@@ -42,6 +42,7 @@ export default async function AdminUsersPage({
         page={page}
         totalPages={result.totalPages ?? 1}
         currentUserId={session.user.id}
+        currentUserRole={session.user.role ?? "viewer"}
         initialSearch={search}
       />
     </div>

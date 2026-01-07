@@ -3,6 +3,7 @@ import { db, shelves } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { getUserTeamIds } from "@/lib/permissions";
+import { isAdmin } from "@/lib/rbac";
 
 export async function GET(
   request: Request,
@@ -39,8 +40,8 @@ export async function GET(
       const teamIds = await getUserTeamIds(session.user.id);
       return teamIds.includes(shelf.teamId);
     }
-    // Admin can access all
-    if (session.user.role === "admin") {
+    // Admin/superadmin can access all
+    if (isAdmin(session.user.role)) {
       return true;
     }
     return false;

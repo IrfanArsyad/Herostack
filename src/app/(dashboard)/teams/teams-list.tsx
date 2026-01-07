@@ -31,7 +31,7 @@ interface Team {
   name: string;
   slug: string;
   description: string | null;
-  myRole: "owner" | "admin" | "member";
+  myRole: "superadmin" | "owner" | "admin" | "member";
   memberCount: number;
 }
 
@@ -40,12 +40,14 @@ interface TeamsListProps {
 }
 
 const roleIcons = {
+  superadmin: Crown,
   owner: Crown,
   admin: Shield,
   member: User,
 };
 
 const roleLabels = {
+  superadmin: "Super Admin",
   owner: "Owner",
   admin: "Admin",
   member: "Member",

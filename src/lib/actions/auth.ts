@@ -1,6 +1,6 @@
 "use server";
 
-import { signIn, signOut } from "@/lib/auth";
+import { signIn, signOut, auth } from "@/lib/auth";
 import { db, users } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
@@ -132,4 +132,87 @@ export async function loginWithGitHub() {
 
 export async function logout() {
   await signOut({ redirectTo: "/" });
+}
+
+export async function changePassword(formData: FormData) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" };
+  }
+
+  const currentPassword = formData.get("currentPassword") as string;
+  const newPassword = formData.get("newPassword") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return { error: "All fields are required" };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: "New passwords do not match" };
+  }
+
+  // Validate new password complexity
+  const passwordValidation = validatePassword(newPassword);
+  if (!passwordValidation.valid) {
+    return { error: passwordValidation.error };
+  }
+
+  try {
+    // Get current user with password
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, session.user.id),
+    });
+
+    if (!user || !user.password) {
+      return { error: "Cannot change password for OAuth accounts" };
+    }
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      return { error: "Current password is incorrect" };
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update password
+    await db
+      .update(users)
+      .set({ password: hashedPassword, updatedAt: new Date() })
+      .where(eq(users.id, session.user.id));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Change password error:", error);
+    return { error: "Failed to change password" };
+  }
+}
+
+export async function updateProfile(formData: FormData) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" };
+  }
+
+  const name = formData.get("name") as string;
+
+  if (!name || name.trim().length === 0) {
+    return { error: "Name is required" };
+  }
+
+  try {
+    await db
+      .update(users)
+      .set({ name: name.trim(), updatedAt: new Date() })
+      .where(eq(users.id, session.user.id));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Update profile error:", error);
+    return { error: "Failed to update profile" };
+  }
 }

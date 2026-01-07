@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 import { eq, and, desc, like, or, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
-import { requirePermission } from "@/lib/rbac";
+import { requirePermission, isAdmin, isSuperAdmin } from "@/lib/rbac";
 
 function generateSlug(name: string): string {
   return name
@@ -23,6 +23,35 @@ export async function getMyTeams() {
   }
 
   try {
+    // Superadmin can see all teams
+    if (isSuperAdmin(session.user.role)) {
+      const allTeams = await db.query.teams.findMany({
+        orderBy: [desc(schema.teams.createdAt)],
+        with: {
+          members: {
+            with: {
+              user: {
+                columns: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  image: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return {
+        teams: allTeams.map((team) => ({
+          ...team,
+          myRole: "superadmin" as const,
+          memberCount: team.members.length,
+        })),
+      };
+    }
+
     const memberships = await db.query.teamMembers.findMany({
       where: eq(schema.teamMembers.userId, session.user.id),
       with: {
@@ -171,11 +200,11 @@ export async function getTeam(teamId: string) {
       return { error: "Team not found" };
     }
 
-    // Check if user is member or admin
+    // Check if user is member or system admin/superadmin
     const isMember = team.members.some((m) => m.userId === session.user!.id);
-    const isAdmin = session.user.role === "admin";
+    const hasAdminAccess = isAdmin(session.user.role);
 
-    if (!isMember && !isAdmin) {
+    if (!isMember && !hasAdminAccess) {
       return { error: "Access denied" };
     }
 
@@ -256,7 +285,7 @@ export async function updateTeam(
       ),
     });
 
-    const isSystemAdmin = session.user.role === "admin";
+    const isSystemAdmin = isAdmin(session.user.role);
     const isTeamAdmin = membership?.role === "owner" || membership?.role === "admin";
 
     if (!isSystemAdmin && !isTeamAdmin) {
@@ -307,7 +336,7 @@ export async function deleteTeam(teamId: string) {
       ),
     });
 
-    const isSystemAdmin = session.user.role === "admin";
+    const isSystemAdmin = isAdmin(session.user.role);
     const isTeamOwner = membership?.role === "owner";
 
     if (!isSystemAdmin && !isTeamOwner) {
@@ -345,7 +374,7 @@ export async function addTeamMember(
       ),
     });
 
-    const isSystemAdmin = session.user.role === "admin";
+    const isSystemAdmin = isAdmin(session.user.role);
     const isTeamAdmin = membership?.role === "owner" || membership?.role === "admin";
 
     if (!isSystemAdmin && !isTeamAdmin) {
@@ -395,7 +424,7 @@ export async function removeTeamMember(teamId: string, userId: string) {
       ),
     });
 
-    const isSystemAdmin = session.user.role === "admin";
+    const isSystemAdmin = isAdmin(session.user.role);
     const isTeamAdmin = membership?.role === "owner" || membership?.role === "admin";
     const isSelf = userId === session.user.id;
 
@@ -465,7 +494,7 @@ export async function updateTeamMemberRole(
       ),
     });
 
-    const isSystemAdmin = session.user.role === "admin";
+    const isSystemAdmin = isAdmin(session.user.role);
     const isTeamOwner = membership?.role === "owner";
 
     if (!isSystemAdmin && !isTeamOwner) {
@@ -525,7 +554,7 @@ export async function createTeamInvitation(
       ),
     });
 
-    const isSystemAdmin = session.user.role === "admin";
+    const isSystemAdmin = isAdmin(session.user.role);
     const isTeamAdmin = membership?.role === "owner" || membership?.role === "admin";
 
     if (!isSystemAdmin && !isTeamAdmin) {
@@ -580,7 +609,7 @@ export async function getTeamInvitations(teamId: string) {
       ),
     });
 
-    const isSystemAdmin = session.user.role === "admin";
+    const isSystemAdmin = isAdmin(session.user.role);
     const isTeamAdmin = membership?.role === "owner" || membership?.role === "admin";
 
     if (!isSystemAdmin && !isTeamAdmin) {
@@ -632,7 +661,7 @@ export async function deleteTeamInvitation(invitationId: string) {
       ),
     });
 
-    const isSystemAdmin = session.user.role === "admin";
+    const isSystemAdmin = isAdmin(session.user.role);
     const isTeamAdmin = membership?.role === "owner" || membership?.role === "admin";
 
     if (!isSystemAdmin && !isTeamAdmin) {

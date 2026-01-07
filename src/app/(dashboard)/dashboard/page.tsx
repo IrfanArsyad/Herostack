@@ -32,8 +32,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto w-full">
-      {/* Update Notification (Admin only) */}
-      {session?.user?.role === "admin" && <UpdateNotification />}
+      {/* Update Notification (Admin/Superadmin only) */}
+      {(session?.user?.role === "admin" || session?.user?.role === "superadmin") && <UpdateNotification />}
 
       {/* Welcome */}
       <div className="mb-6">

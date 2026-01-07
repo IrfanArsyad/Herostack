@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { db, teams } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { isAdmin } from "@/lib/rbac";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Settings, Link as LinkIcon, Users } from "lucide-react";
@@ -59,7 +60,7 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
   const canManage =
     team.myRole === "owner" ||
     team.myRole === "admin" ||
-    session.user.role === "admin";
+    isAdmin(session.user.role);
 
   if (!canManage) {
     redirect(`/teams/${slug}`);

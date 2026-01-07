@@ -2,6 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../src/lib/db/schema";
 import slugify from "slugify";
+import bcrypt from "bcryptjs";
 
 const queryClient = postgres({
   host: process.env.DB_HOST || "localhost",
@@ -17,6 +18,25 @@ const createSlug = (text: string) =>
 
 async function seed() {
   console.log("Seeding sample content...");
+
+  // Create default superadmin user
+  const hashedPassword = await bcrypt.hash("superadmin123", 12);
+  const [superadmin] = await db
+    .insert(schema.users)
+    .values({
+      name: "Super Admin",
+      email: "superadmin@studiolab.id",
+      password: hashedPassword,
+      role: "superadmin",
+    })
+    .onConflictDoNothing()
+    .returning();
+
+  if (superadmin) {
+    console.log("Created superadmin user:", superadmin.email);
+  } else {
+    console.log("Superadmin user already exists");
+  }
 
   // Create Shelf
   const [shelf] = await db

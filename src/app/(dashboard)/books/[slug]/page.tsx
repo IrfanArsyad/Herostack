@@ -4,6 +4,7 @@ import { db, books } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { getUserTeamIds } from "@/lib/permissions";
+import { isAdmin } from "@/lib/rbac";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import {
@@ -87,8 +88,8 @@ export default async function BookPage({ params }: BookPageProps) {
       const teamIds = await getUserTeamIds(session.user.id);
       return teamIds.includes(book.teamId);
     }
-    // Admin can access all
-    if (session.user.role === "admin") {
+    // Admin/superadmin can access all
+    if (isAdmin(session.user.role)) {
       return true;
     }
     return false;

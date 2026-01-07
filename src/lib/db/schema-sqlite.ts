@@ -17,7 +17,7 @@ export const users = sqliteTable("users", {
   emailVerified: integer("email_verified", { mode: "timestamp" }),
   image: text("image"),
   password: text("password"),
-  role: text("role", { enum: ["admin", "editor", "viewer"] }).default("viewer").notNull(),
+  role: text("role", { enum: ["superadmin", "admin", "editor", "viewer"] }).default("viewer").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
 });

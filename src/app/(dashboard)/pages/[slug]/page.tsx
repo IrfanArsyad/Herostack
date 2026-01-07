@@ -37,6 +37,7 @@ import { getComments } from "@/lib/actions/comments";
 import { auth } from "@/lib/auth";
 import { ShareDialog } from "@/components/share/share-dialog";
 import { getUserTeamIds } from "@/lib/permissions";
+import { isAdmin } from "@/lib/rbac";
 
 interface PageViewProps {
   params: Promise<{ slug: string }>;
@@ -94,8 +95,8 @@ export default async function PageView({ params }: PageViewProps) {
         return teamIds.includes(page.book.teamId);
       }
     }
-    // Admin can access all
-    if (session.user.role === "admin") {
+    // Admin/superadmin can access all
+    if (isAdmin(session.user.role)) {
       return true;
     }
     return false;

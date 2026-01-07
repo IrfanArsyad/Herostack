@@ -8,8 +8,22 @@ import { BooksList } from "./books-list";
 import { ImportBookDialog } from "@/components/import/import-book-dialog";
 import { auth } from "@/lib/auth";
 import { getUserTeamIds } from "@/lib/permissions";
+import { isSuperAdmin } from "@/lib/rbac";
 
-async function getBooks(userId: string) {
+async function getBooks(userId: string, userRole?: string) {
+  // Superadmin can see all books
+  if (isSuperAdmin(userRole)) {
+    return db.query.books.findMany({
+      orderBy: [desc(books.createdAt)],
+      with: {
+        shelf: true,
+        team: {
+          columns: { id: true, name: true, slug: true },
+        },
+      },
+    });
+  }
+
   const teamIds = await getUserTeamIds(userId);
 
   // Get books that:
@@ -33,7 +47,14 @@ async function getBooks(userId: string) {
   });
 }
 
-async function getShelves(userId: string) {
+async function getShelves(userId: string, userRole?: string) {
+  // Superadmin can see all shelves
+  if (isSuperAdmin(userRole)) {
+    return db.query.shelves.findMany({
+      orderBy: [desc(shelves.createdAt)],
+    });
+  }
+
   const teamIds = await getUserTeamIds(userId);
 
   const conditions = [and(isNull(shelves.teamId), eq(shelves.createdBy, userId))];
@@ -55,8 +76,8 @@ export default async function BooksPage() {
   }
 
   const [allBooks, allShelves] = await Promise.all([
-    getBooks(session.user.id),
-    getShelves(session.user.id),
+    getBooks(session.user.id, session.user.role),
+    getShelves(session.user.id, session.user.role),
   ]);
 
   return (

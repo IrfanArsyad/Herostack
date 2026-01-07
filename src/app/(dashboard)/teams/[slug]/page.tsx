@@ -3,6 +3,7 @@ import Link from "next/link";
 import { db, teams } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { isAdmin } from "@/lib/rbac";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,13 +94,13 @@ export default async function TeamPage({ params }: TeamPageProps) {
 
   // Check access
   const isMember = team.myRole !== null;
-  const isAdmin = session.user.role === "admin";
+  const hasAdminAccess = isAdmin(session.user.role);
 
-  if (!isMember && !isAdmin) {
+  if (!isMember && !hasAdminAccess) {
     notFound();
   }
 
-  const canManage = team.myRole === "owner" || team.myRole === "admin" || isAdmin;
+  const canManage = team.myRole === "owner" || team.myRole === "admin" || hasAdminAccess;
 
   return (
     <>

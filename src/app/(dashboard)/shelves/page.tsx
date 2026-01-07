@@ -6,9 +6,23 @@ import { Library } from "lucide-react";
 import { QuickCreateShelf } from "@/components/quick-create";
 import { auth } from "@/lib/auth";
 import { getUserTeamIds } from "@/lib/permissions";
+import { isSuperAdmin } from "@/lib/rbac";
 import { ShelvesList } from "./shelves-list";
 
-async function getShelves(userId: string) {
+async function getShelves(userId: string, userRole?: string) {
+  // Superadmin can see all shelves
+  if (isSuperAdmin(userRole)) {
+    return db.query.shelves.findMany({
+      orderBy: [desc(shelves.createdAt)],
+      with: {
+        books: true,
+        team: {
+          columns: { id: true, name: true, slug: true },
+        },
+      },
+    });
+  }
+
   const teamIds = await getUserTeamIds(userId);
 
   // Get shelves that:
@@ -38,7 +52,7 @@ export default async function ShelvesPage() {
     redirect("/login");
   }
 
-  const allShelves = await getShelves(session.user.id);
+  const allShelves = await getShelves(session.user.id, session.user.role);
 
   return (
     <div className="p-6 max-w-5xl mx-auto w-full">

@@ -36,6 +36,7 @@ import {
   Tags,
   Github,
   Puzzle,
+  Settings,
 } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -175,8 +176,8 @@ export function AppSidebar({ user, pluginItems = [] }: AppSidebarProps) {
           </SidebarGroup>
         )}
 
-        {/* Admin (only for admin users) */}
-        {user.role === "admin" && (
+        {/* Admin (only for admin/superadmin users) */}
+        {(user.role === "admin" || user.role === "superadmin") && (
           <SidebarGroup>
             <div className="px-2 py-1.5">
               <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
@@ -225,6 +226,13 @@ export function AppSidebar({ user, pluginItems = [] }: AppSidebarProps) {
                   <div className="px-2 py-1.5 text-xs text-muted-foreground">
                     {user.email}
                   </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" onClick={handleLinkClick}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Profile Settings
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <form action={logout} className="w-full">
