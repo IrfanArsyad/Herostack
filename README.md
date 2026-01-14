@@ -61,10 +61,15 @@
 - **Dynamic Menu** - Installed plugins appear in sidebar automatically
 - **Plugin Marketplace** - Extend functionality with third-party plugins
 
-### Authentication
+### Authentication & Security
 - Email/Password login
 - Google OAuth
 - GitHub OAuth
+- **Auto-Logout**: Automatic logout when session expires
+- **Session Monitoring**: Real-time session validation
+- **Session Warning**: 5-minute warning before expiration
+- **Multi-Tab Sync**: Logout synced across all browser tabs
+- **Configurable Timeout**: Customizable session duration (default: 24 hours)
 
 ## Tech Stack
 
@@ -74,6 +79,48 @@
 - **UI**: shadcn/ui + Tailwind CSS
 - **Editor**: TipTap
 - **Runtime**: Bun
+
+## Installation Options
+
+Choose the installation method that suits your needs:
+
+### 🚀 For Quick Testing (Clone)
+```bash
+git clone https://github.com/IrfanArsyad/Herostack.git
+cd Herostack
+./install.sh
+```
+
+### 🍴 For Development/Contributing (Fork)
+1. **Fork** this repository on GitHub (click "Fork" button)
+2. Clone your fork:
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/Herostack.git
+   cd Herostack
+   ```
+3. Add upstream remote (to sync with original):
+   ```bash
+   git remote add upstream https://github.com/IrfanArsyad/Herostack.git
+   ```
+4. Run installer:
+   ```bash
+   ./install.sh
+   ```
+
+### 🎯 For Your Own Project (Template)
+1. Click "Use this template" button on GitHub (if available)
+2. Create your new repository
+3. Clone your new repository:
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/your-project.git
+   cd your-project
+   ```
+4. Run setup script to configure Git:
+   ```bash
+   ./setup-repo.sh
+   ```
+
+> **Note:** If you cloned this repository and want to push to your own repository, run `./setup-repo.sh` to change the remote URL. See [GIT-SETUP.md](./GIT-SETUP.md) for details.
 
 ## Quick Install
 
@@ -175,22 +222,68 @@ bun run dev
 
 ### Production with PM2
 
-```bash
-# Install dependencies
-bun install
+#### Quick Setup (Recommended)
 
+HeroStack includes ready-to-use PM2 configuration and setup scripts:
+
+```bash
+# One-time setup (installs PM2, builds app, and starts it)
+./pm2-setup.sh
+```
+
+The setup script will:
+- Create logs directory
+- Install PM2 globally (if not already installed)
+- Install dependencies
+- Build the application
+- Start the app with PM2
+- Save PM2 configuration
+- Setup auto-start on system reboot
+
+#### NPM Scripts
+
+```bash
+npm run pm2:start    # Start application with PM2
+npm run pm2:stop     # Stop application
+npm run pm2:restart  # Restart application
+npm run pm2:reload   # Zero-downtime reload
+npm run pm2:delete   # Remove from PM2
+npm run pm2:logs     # View logs
+npm run pm2:monit    # Monitor application
+```
+
+#### Deployment Script
+
+For automated deployments (pull latest code, build, and reload):
+
+```bash
+./pm2-deploy.sh
+```
+
+This script will:
+- Pull latest changes from git
+- Install/update dependencies
+- Build the application
+- Reload the app with zero downtime
+
+#### Manual PM2 Setup
+
+If you prefer manual setup:
+
+```bash
 # Setup environment
 cp .env.example .env
 # Edit .env with your database URL and AUTH_SECRET
 
-# Build application
-bun run build
+# Install dependencies and build
+npm install
+npm run build
 
 # Install PM2 globally
 npm install -g pm2
 
-# Start with PM2
-pm2 start bun --name "herostack" -- run start
+# Start with PM2 using ecosystem.config.js
+pm2 start ecosystem.config.js
 
 # Save PM2 process list
 pm2 save
@@ -199,12 +292,22 @@ pm2 save
 pm2 startup
 ```
 
-**PM2 Commands:**
+#### PM2 Configuration
+
+The `ecosystem.config.js` file includes:
+- Cluster mode for better performance
+- Auto-restart on crashes
+- Memory limit (1GB)
+- Log management
+- Environment variables
+
+#### Monitoring
+
 ```bash
+pm2 list            # List all processes
 pm2 status          # Check status
-pm2 logs herostack  # View logs
-pm2 restart herostack  # Restart
-pm2 stop herostack  # Stop
+pm2 logs herostack  # View live logs
+pm2 monit           # Real-time monitoring dashboard
 ```
 
 ### Production with Systemd
@@ -250,6 +353,7 @@ sudo systemctl status herostack
 | `AUTH_GOOGLE_SECRET` | No | Google OAuth Secret |
 | `AUTH_GITHUB_ID` | No | GitHub OAuth Client ID |
 | `AUTH_GITHUB_SECRET` | No | GitHub OAuth Secret |
+| `SESSION_TIMEOUT_HOURS` | No | Session timeout in hours (default: 24) |
 
 ## OAuth Setup
 
@@ -290,6 +394,26 @@ sudo systemctl status herostack
 
 > **Note:** For production, replace `http://localhost:3056` with your actual domain.
 
+## Session Management
+
+HeroStack includes automatic session management with auto-logout when sessions expire.
+
+**Features:**
+- Auto-logout when session expires
+- Configurable session timeout (default: 24 hours)
+- Warning notification 5 minutes before expiration
+- Auto-refresh every 5 minutes for active users
+- Multi-tab logout synchronization
+
+**Configuration:**
+
+```bash
+# .env
+SESSION_TIMEOUT_HOURS="24"  # Default: 24 hours
+```
+
+For more details, see [SESSION.md](./SESSION.md)
+
 ## Commands
 
 ```bash
@@ -329,6 +453,32 @@ bunx drizzle-kit studio --config drizzle.config.sqlite.ts
 |--------|-------------|
 | [IP Whitelist](https://github.com/IrfanArsyad/herostack-whitelist) | Restrict access by IP address |
 | [Doc Summarizer](https://github.com/IrfanArsyad/herostack-doc-summarizer) | Summarize docs from URL using AI |
+
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on:
+- Fork & clone workflow
+- Development setup
+- Branch naming conventions
+- Pull request process
+
+**Quick Start for Contributors:**
+```bash
+# Fork repository di GitHub, kemudian:
+git clone https://github.com/YOUR-USERNAME/Herostack.git
+cd Herostack
+git remote add upstream https://github.com/IrfanArsyad/Herostack.git
+```
+
+See [GIT-SETUP.md](./GIT-SETUP.md) for Git workflow and [GIT-QUICKREF.md](./GIT-QUICKREF.md) for common commands.
+
+## Documentation
+
+- [SESSION.md](./SESSION.md) - Session management and auto-logout
+- [PM2.md](./PM2.md) - PM2 deployment and monitoring (Bahasa)
+- [GIT-SETUP.md](./GIT-SETUP.md) - Git repository setup guide
+- [GIT-QUICKREF.md](./GIT-QUICKREF.md) - Git commands quick reference
+- [CONTRIBUTING.md](./CONTRIBUTING.md) - How to contribute
 
 ## License
 

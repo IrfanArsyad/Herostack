@@ -12,7 +12,14 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "bun run scripts/seed.ts",
-    "db:superadmin": "bun run scripts/create-superadmin.ts"
+    "db:superadmin": "bun run scripts/create-superadmin.ts",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop herostack",
+    "pm2:restart": "pm2 restart herostack",
+    "pm2:reload": "pm2 reload herostack",
+    "pm2:delete": "pm2 delete herostack",
+    "pm2:logs": "pm2 logs herostack",
+    "pm2:monit": "pm2 monit"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",

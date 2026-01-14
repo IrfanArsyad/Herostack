@@ -57,3 +57,8 @@ TASKS.md
 # Runtime files
 update.log
 update.status
+
+# PM2 logs
+/logs
+*.log
+.pm2
