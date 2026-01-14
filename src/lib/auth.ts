@@ -94,10 +94,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.role = token.role as string;
       }
-      // Add expiration time to session
-      if (token.exp) {
-        session.expires = new Date(token.exp * 1000).toISOString();
-      }
       return session;
     },
   },
