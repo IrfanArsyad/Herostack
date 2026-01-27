@@ -77,11 +77,8 @@ export async function updateShelf(id: string, formData: FormData) {
 
     revalidatePath("/shelves");
     revalidatePath(`/shelves/${shelf.slug}`);
-    redirect(`/shelves/${shelf.slug}`);
+    return { success: true };
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
     console.error("Error updating shelf:", error);
     return { error: "Failed to update shelf" };
   }

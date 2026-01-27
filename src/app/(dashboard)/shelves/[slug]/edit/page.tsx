@@ -39,6 +39,7 @@ interface Team {
 
 export default function EditShelfPage({ params }: EditShelfPageProps) {
   const { slug } = use(params);
+  const router = useRouter();
   const [shelf, setShelf] = useState<{
     id: string;
     name: string;
@@ -85,6 +86,8 @@ export default function EditShelfPage({ params }: EditShelfPageProps) {
     if (result?.error) {
       setError(result.error);
       setIsLoading(false);
+    } else {
+      router.push(`/shelves/${slug}`);
     }
   }
 

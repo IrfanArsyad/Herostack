@@ -135,13 +135,14 @@ export function BooksList({ books, isSuperAdmin }: BooksListProps) {
       ) : (
         <div className="grid gap-2 sm:grid-cols-2">
           {filteredBooks.map((book) => (
-            <Card key={book.id} className="hover:bg-muted/50 transition-colors group">
-              <CardContent className="py-3 px-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-500/10 rounded shrink-0">
-                    <BookMarked className="h-4 w-4 text-blue-500" />
-                  </div>
-                  <div className="min-w-0 flex-1">
+            <Link key={book.id} href={`/books/${book.slug}`}>
+              <Card className="hover:bg-muted/50 transition-colors group cursor-pointer">
+                <CardContent className="py-3 px-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-500/10 rounded shrink-0">
+                      <BookMarked className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div className="min-w-0 flex-1">
                     <div className="font-medium text-sm truncate flex items-center gap-2">
                       {book.name}
                       {book.isPublic && (
@@ -223,6 +224,7 @@ export function BooksList({ books, isSuperAdmin }: BooksListProps) {
                 </div>
               </CardContent>
             </Card>
+            </Link>
           ))}
         </div>
       )}

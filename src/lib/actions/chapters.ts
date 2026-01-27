@@ -83,11 +83,8 @@ export async function updateChapter(id: string, formData: FormData) {
 
     revalidatePath("/books");
     revalidatePath(`/chapters/${chapter.slug}`);
-    redirect(`/chapters/${chapter.slug}`);
+    return { success: true };
   } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
     console.error("Error updating chapter:", error);
     return { error: "Failed to update chapter" };
   }
